@@ -1,0 +1,51 @@
+@startuml package_structure
+title Package Structure\n
+
+skinparam {
+    ComponentStyle uml2
+    TitleFontSize 20
+    ClassFontSize 16
+    LegendFontSize 12
+    LegendBackgroundColor LightGrey
+    LegendBorderColor White
+    ClassBackgroundColor PaleGreen
+}
+
+
+hide circle
+hide empty members
+
+class "internal/mocks" #LightGrey
+class "client"
+class "comm/websocket" #LightGrey
+class "comm" #LightGrey
+class "comm/tcp"
+class "contacts/yaml" #LightGrey
+class "contacts" #LightGrey
+class "blockchain/ethereum-wallet"
+class "blockchain/ethereum-chain"
+class "node" #LightGrey
+
+"contacts" ..> dst
+"comm/tcp" ..> dst
+"comm" ..> dst
+"comm/websocket" ..> dst
+"client" ..> dst
+"blockchain/ethereum-wallet" ..> dst
+"blockchain/ethereum-chain" ..> dst
+"node" ..> "blockchain/ethereum-wallet"
+"client" ..> "blockchain/ethereum-chain"
+"client" .left.> "blockchain/ethereum-wallet"
+"node" ..> "contacts"
+"node" ..> "contacts/yaml"
+"node" ..> "comm"
+"node" ..> "comm/tcp"
+"node" ..> "comm/websocket"
+"node" ..> "client"
+
+legend bottom right
+    Green - implemented in client setup
+    Grey - yet to be implemented
+endlegend
+
+@enduml
