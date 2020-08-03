@@ -116,7 +116,7 @@ you have the right to submit the code.
 
 If you are a developer who is authorized to contribute to Perun on behalf of
 your employer, then please use your corporate email address in the
-Signed-off-by tag. Otherwise please use a personal email address.
+Signed-off-by tag, otherwise use a personal email address.
 
 [SubmittingPatches]:
 https://github.com/wking/signed-off-by/blob/7d71be37194df05c349157a2161c7534feaf86a4/Documentation/SubmittingPatches
