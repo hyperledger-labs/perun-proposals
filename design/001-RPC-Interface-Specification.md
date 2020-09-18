@@ -4,7 +4,8 @@
 * Status: propose
 * Related issue:
   [perun-node#45](https://github.com/hyperledger-labs/perun-node/issues/45),
-  [perun-node#108](https://github.com/hyperledger-labs/perun-node/issues/108).
+  [perun-node#108](https://github.com/hyperledger-labs/perun-node/issues/108),
+  [perun-node#100](https://github.com/hyperledger-labs/perun-node/issues/100).
 
 
 <!-- Use the above format for issues on GitHub and full links for issues on
@@ -162,6 +163,8 @@ Returns the configuration parameters of the node.
 #### 2. Open Session
 
 Open a new session for the given user with the specified configuration file.
+If the database has unclosed channels from the previous instance of the session,
+these channels will be restored and their last known info will be returned.
 
 *Parameters*
 
@@ -171,6 +174,7 @@ Open a new session for the given user with the specified configuration file.
 *Return*
 
 * `Session ID`: [String] Unique ID of the session.
+* `Restored Channels Info`: [List of Payment Channel Info]
 
 *Errors*
 
