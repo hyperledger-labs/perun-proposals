@@ -154,7 +154,7 @@ Open a new session for the given user with the specified configuration file.
 #### 3. Time
 
 Returns the time as per perun node's clock in unix format. This time should be used
-to check if the timeout in a notification has expired or not.
+to check the expiry of a notification.
 
 *Parameters* none
 
@@ -268,7 +268,7 @@ these cached requests (if any), as individual notifications. It will then
 continue to send a notification for each new incoming channel proposal.
 
 Response to the notifications can be sent using the `Respond To Channel
-Proposal` API before the `timeout` expires.
+Proposal` API before the notification expires.
 
 If the proposal was received from a `Peer` that is not found in the contacts
 provider of the session, the proposal will be automatically rejected by the
@@ -297,7 +297,7 @@ Each notification sent to the user should contain the following data:
 * `Proposal ID`: [String] Unique ID of this channel proposal.
 * `Opening Balance`: [Balance Info]
 * `Challenge Duration in Seconds`: [uint64] Challenge Duration for the channel in seconds.
-* `Timeout`: [int64] Time (in unix format) before which response should be sent.
+* `Expiry`: [int64] Time (in unix format) before which response should be sent.
 
 #### 6. Unsubscribe To Payment Channel Proposals
 
@@ -320,8 +320,9 @@ specified session.
 #### 7. Respond To Payment Channel Proposal
 
 Respond to an incoming payment channel proposal for which a notification was
-received. Response should be sent before the timeout in the notification
-expires. Use the `Time` API to fetch current time of the perun node.
+received. Response should be sent before the notification expires. Use the
+`Time` API to fetch current time of the perun node to check notification
+expiry.
 
 *Parameters*
 
@@ -460,7 +461,7 @@ send these cached request (if any), as individual notifications. It will then
 continue to send a notification for each new incoming payment channel update.
 
 Response to the notifications can be sent using the `Respond To Payment
-Channel Update` API.
+Channel Update` API before the notification expires.
 
 *Parameters*
 
@@ -487,7 +488,7 @@ Each notification sent to the user should contain the following data:
 * `Version`: [String] Version of the channel state for the proposed payment.
 * `Final`: [bool] Indicates if this is a final update. Channel will be closed
   once a final update is accepted.
-* `Timeout`: [int64] Time (in unix format) before which response should be
+* `Expiry`: [int64] Time (in unix format) before which response should be
   sent.
 
 #### 3. Unsubscribe To Payment Channel Updates
@@ -512,9 +513,10 @@ specified channel in the specified session.
 
 #### 4. Respond To Payment Channel Update
 
-Respond to an incoming payment channel update. Response should be sent before
-the timeout in the notification expires. Use the `Time` API to fetch current
-time of the perun node.
+Respond to an incoming payment channel update for which a notification was
+received. Response should be sent before the notification expires. Use the
+`Time` API to fetch current time of the perun node to check notification
+expiry.
 
 *Parameters*
 
