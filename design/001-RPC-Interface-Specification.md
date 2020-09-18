@@ -1,5 +1,3 @@
-<!-- This is a template for proposing design changes to the dst-go project. -->
-
 # Proposal: Descriptive specification of the User API for Two Party Payment Channels
 
 * Author(s): Manoranjith

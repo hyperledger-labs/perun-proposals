@@ -1,4 +1,4 @@
-<!-- This is a template for proposing design changes to the dst-go project. -->
+<!-- This is a template for proposing design changes to the perun project. -->
 
 # Proposal: <!-- Title of the proposal-->
 
