@@ -5,7 +5,8 @@
 * Related issue:
   [perun-node#45](https://github.com/hyperledger-labs/perun-node/issues/45),
   [perun-node#108](https://github.com/hyperledger-labs/perun-node/issues/108),
-  [perun-node#100](https://github.com/hyperledger-labs/perun-node/issues/100).
+  [perun-node#100](https://github.com/hyperledger-labs/perun-node/issues/100),
+  [perun-node#107](https://github.com/hyperledger-labs/perun-node/issues/107).
 
 
 <!-- Use the above format for issues on GitHub and full links for issues on
@@ -372,59 +373,7 @@ expiry.
 * `Peer Not Responding`
 * `Response Timeout Expired`
 
-#### 7. Subscribe To Payment Channel Closes
-
-Subscribe to notifications when channels in the specified session are closed by
-the peer. User need not respond to these notifications.
-
-Only one subscription can be made at a time. Making a new subscription request
-without canceling the previous one will return an error.
-
-The channel close events occurred when there was no subscription will have been
-cached by the node. Once a new subscription is made, node will send these
-cached events (if any), as individual notifications. It will then continue to
-send a notification for each channel closed by a peer.
-
-*Parameters*
-
-* `Session ID`: [String] Unique ID of the session.
-
-*Return*
-
-* `Success`: [bool]
-
-*Errors*
-
-* `Unknown Session ID`
-* `Subscription Already Exists`
-
-*Notification*
-
-Each notification sent to the user should contain the following data:
-
-* `Closed Channel Info`: [Payment Channel Info]
-* `Error`: [String] Error (if any) in closing the channel.
-
-#### 8. Unsubscribe From Payment Channel Closes
-
-Unsubscribe from notifications when channels in the specified session are
-closed by the peer.
-
-*Parameters*
-
-* `Session ID`: [String] Unique ID of the session.
-
-*Return*
-
-* `Success`: [bool]
-
-*Errors*
-
-* `Unknown Session ID`
-* `No Active Subscription`
-
-
-#### 9. Close Session
+#### 8. Close Session
 
 Close the specified session. All session data will be persisted to disk.
 
@@ -519,9 +468,18 @@ Channel Update` API before the notification expires.
 Each notification sent to the user should contain the following data:
 
 * `UpdateID`: [String] Unique ID that represents this channel update.
- `Proposed Channel Info`: [Payment Channel Info] Proposed channel state.
-* `Final`: [bool] Indicates if this is a final update. Channel will be closed
-  if a final update is accepted.
+* `Proposed Channel Info`: [Payment Channel Info]
+  Proposed channel state.
+* `Status`: [String] Can be one of the three values: `Open`, Final`, `Closed`.
+    * `Open`: This is a normal channel update, if accepted off-chain state of
+      the channel will be progressed to the proposed state.
+    * `Final`: Indicates if this is a final update. Channel will be closed if a
+      final update is accepted.
+    * `Closed`: Indicates that the channel has been closed. This will be final
+      update notification for the channel and the subscription should be
+      cancelled once such an update is received. No response is expected in
+      this case. If the user still responds, `Unknown Update ID` error will be
+      returned.
 * `Expiry`: [int64] Time (in unix format) before which response should be
   sent.
 
