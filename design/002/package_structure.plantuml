@@ -20,13 +20,13 @@ class "client"
 class "comm/websocket" #LightGrey
 class "comm" #LightGrey
 class "comm/tcp"
-class "contacts/yaml" #LightGrey
-class "contacts" #LightGrey
+class "idprovider/local" #LightGrey
+class "idprovider" #LightGrey
 class "blockchain/ethereum-wallet"
 class "blockchain/ethereum-chain"
 class "node" #LightGrey
 
-"contacts" ..> dst
+"idprovider" ..> dst
 "comm/tcp" ..> dst
 "comm" ..> dst
 "comm/websocket" ..> dst
@@ -36,8 +36,8 @@ class "node" #LightGrey
 "node" ..> "blockchain/ethereum-wallet"
 "client" ..> "blockchain/ethereum-chain"
 "client" .left.> "blockchain/ethereum-wallet"
-"node" ..> "contacts"
-"node" ..> "contacts/yaml"
+"node" ..> "idprovider"
+"node" ..> "idprovider/local"
 "node" ..> "comm"
 "node" ..> "comm/tcp"
 "node" ..> "comm/websocket"

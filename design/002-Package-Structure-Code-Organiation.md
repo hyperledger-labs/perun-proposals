@@ -32,7 +32,7 @@ for all the collaborators.
    in this project and should contain only definitions.
 
 2. A separate package is used for implementing the functionality that depends
-   on an external system (E.g., contacts provider, communication protocol).
+   on an external system (E.g., ID provider, communication protocol).
 
 3. If the functionality has multiple implementations, use a separate package
    for each of the implementations, with all such packages located in the same
