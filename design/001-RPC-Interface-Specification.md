@@ -40,8 +40,8 @@ The node shall provide three sets of APIs:
 2. Session APIs - For accessing the session related functionality. Each request
    should include a Session ID. Following APIs should be provided:
 
-    1. [Add PeerID](#1-add-peer-id)
-    2. [Get PeerID](#2-get-peer-id)
+    1. [Add Peer ID](#1-add-peer-id)
+    2. [Get Peer ID](#2-get-peer-id)
     3. [Open Payment Channel](#3-open-payment-channel)
     4. [Get Payment Channels Info](#4-get-payment-channels-info)
     5. [Subscribe To Payment Channel Proposals](#5-subscribe-to-payment-channel-proposals)
