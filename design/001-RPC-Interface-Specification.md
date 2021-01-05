@@ -40,8 +40,8 @@ The node shall provide three sets of APIs:
 2. Session APIs - For accessing the session related functionality. Each request
    should include a Session ID. Following APIs should be provided:
 
-    1. [Add PeerID](#1-add-peerID)
-    2. [Get PeerID](#2-get-peerID)
+    1. [Add PeerID](#1-add-peer-id)
+    2. [Get PeerID](#2-get-peer-id)
     3. [Open Payment Channel](#3-open-payment-channel)
     4. [Get Payment Channels Info](#4-get-payment-channels-info)
     5. [Subscribe To Payment Channel Proposals](#5-subscribe-to-payment-channel-proposals)
@@ -63,7 +63,7 @@ The node shall provide three sets of APIs:
 
 The following 3 data formats will be used in the APIs.
 
-#### 1. Peer
+#### 1. Peer ID
 
 * `Alias`: [String] Alias for the peer. This will be used to reference a
   peer in all API calls.
@@ -173,7 +173,7 @@ these channels will be restored and their last known info will be returned.
 *Return*
 
 * `Session ID`: [String] Unique ID of the session.
-* `Restored Channels Info`: [List of [Payment Channel Info](3-payment-channel-info)]
+* `Restored Channels Info`: [List of [Payment Channel Info](#3-payment-channel-info)]
 
 *Errors*
 
@@ -209,7 +209,7 @@ Add a peer ID to the ID provider in the specified session.
 *Parameters*
 
 * `Session ID`: [String] Unique ID of the session.
-* `Peer ID`: [[`Peer ID`](#1-peer ID)] Peer ID to be added to the ID provider.
+* `Peer ID`: [[`Peer ID`](#1-peer-id)] Peer ID to be added to the ID provider.
 
 *Return*
 
@@ -234,7 +234,7 @@ the specified session.
 
 *Return*
 
-* `Peer ID`: [[`Peer ID`](#1-peer ID)] Peer ID retrieved from ID provider.
+* `Peer ID`: [[`Peer ID`](#1-peer-id)] Peer ID retrieved from ID provider.
 
 *Errors*
 
@@ -255,7 +255,7 @@ to refute in case of disputes when a state is registered on the blockchain.
 
 *Return*
 
-* `Opened Payment Channel Info`: [Payment Channel Info](3-payment-channel-info)
+* `Opened Payment Channel Info`: [Payment Channel Info](#3-payment-channel-info)
 
 *Errors*
 
@@ -276,7 +276,7 @@ the specified session.
 
 *Return*
 
-* `Open Payment Channels Info`: [List of [Payment Channel Info](3-payment-channel-info)]
+* `Open Payment Channels Info`: [List of [Payment Channel Info](#3-payment-channel-info)]
 
 *Errors*
 
