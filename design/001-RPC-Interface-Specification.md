@@ -40,8 +40,8 @@ The node shall provide three sets of APIs:
 2. Session APIs - For accessing the session related functionality. Each request
    should include a Session ID. Following APIs should be provided:
 
-    1. [Add Contact](#1-add-contact)
-    2. [Get Contact](#2-get-contact)
+    1. [Add Peer ID](#1-add-peer-id)
+    2. [Get Peer ID](#2-get-peer-id)
     3. [Open Payment Channel](#3-open-payment-channel)
     4. [Get Payment Channels Info](#4-get-payment-channels-info)
     5. [Subscribe To Payment Channel Proposals](#5-subscribe-to-payment-channel-proposals)
@@ -63,7 +63,7 @@ The node shall provide three sets of APIs:
 
 The following 3 data formats will be used in the APIs.
 
-#### 1. Peer
+#### 1. Peer ID
 
 * `Alias`: [String] Alias for the peer. This will be used to reference a
   peer in all API calls.
@@ -78,7 +78,7 @@ The following 3 data formats will be used in the APIs.
 
 * `Currency`: [String] Currency used for specifying the balance.
 * `Aliases`: [List of String] Alias of each channel participants, as in the
-  user's contacts provider. `self` is a special alias for the user of the
+  user's ID provider. `self` is a special alias for the user of the
   node. Each entry in the list should be unique.
 * `Balance`: [List of String] Amount held by each channel participant, in
   the same order as that in the `Aliases`. Each entry will be a nonnegative
@@ -88,7 +88,7 @@ The following 3 data formats will be used in the APIs.
 * When using the `Balance Info` as a parameter in API calls, an error will
   be returned if:
     * the peer corresponding to any of the Aliases cannot be found in user's
-      contacts provider.
+      ID provider.
     * alias list does not have an entry `self` corresponding to the user.
     * alias list has duplicate entries.
     * any of the amounts in the balance is negative or,
@@ -117,7 +117,7 @@ as `Internal Error` with additional details in the error information field.
 2. `Unknown Proposal ID`: No proposal corresponding to the specified ID.
 3. `Unknown Channel ID`: No payment channel corresponding to the specified ID.
 4. `Unknown Alias`: Peer corresponding to the specified ID not found in
-   contacts provider.
+   ID provider.
 5. `Unknown Version`: No pending payment request with the specified version of
    state.
 6. `Invalid Amount`: Invalid amount string.
@@ -128,8 +128,8 @@ as `Internal Error` with additional details in the error information field.
 11. `Subscription Already Exists`: A subscription for this context already
     exists.
 12. `Peer Alias Not Available`: Alias already used by another peer in the
-    contacts.
-13. `Peer Exists`: Peer already available in the contacts provider.
+    ID provider.
+13. `Peer ID Exists`: Peer ID already available in the ID provider.
 14. `Peer Not Responding`: Peer did not respond within expected timeout.
 15. `Peer Rejected`: The request was rejected by the peer. Reason for rejection
     should be included in the error information.
@@ -156,7 +156,7 @@ Returns the configuration parameters of the node.
   by the perun node.
 * `Comm Types`: [List of String] Communication protocols supported by the
   perun-node for off-chain communication.
-* `Contact Types`: [List of String] Contacts Provider backends supported by the
+* `ID provider Types`: [List of String] ID Provider backends supported by the
   perun-node.
 
 #### 2. Open Session
@@ -173,7 +173,7 @@ these channels will be restored and their last known info will be returned.
 *Return*
 
 * `Session ID`: [String] Unique ID of the session.
-* `Restored Channels Info`: [List of [Payment Channel Info](3-payment-channel-info)]
+* `Restored Channels Info`: [List of [Payment Channel Info](#3-payment-channel-info)]
 
 *Errors*
 
@@ -202,14 +202,14 @@ Returns the help message.
 
 ### Session
 
-#### 1. Add Contact
+#### 1. Add Peer ID
 
-Add a peer to the contacts in the specified session.
+Add a peer ID to the ID provider in the specified session.
 
 *Parameters*
 
 * `Session ID`: [String] Unique ID of the session.
-* `Peer`: [[`Peer`](#1-peer)] Peer to be added to the contacts.
+* `Peer ID`: [[`Peer ID`](#1-peer-id)] Peer ID to be added to the ID provider.
 
 *Return*
 
@@ -222,9 +222,9 @@ Add a peer to the contacts in the specified session.
 * `Peer Alias Not Available`
 * `Invalid Off-Chain Address`
 
-#### 2. Get Contact
+#### 2. Get Peer ID
 
-Get the peer corresponding to the given alias from the contacts provider in
+Get the peer ID corresponding to the given alias from the ID provider in
 the specified session.
 
 *Parameters*
@@ -234,7 +234,7 @@ the specified session.
 
 *Return*
 
-* `Peer`: [[`Peer`](#1-peer)] Peer retrieved from contacts.
+* `Peer ID`: [[`Peer ID`](#1-peer-id)] Peer ID retrieved from ID provider.
 
 *Errors*
 
@@ -255,7 +255,7 @@ to refute in case of disputes when a state is registered on the blockchain.
 
 *Return*
 
-* `Opened Payment Channel Info`: [Payment Channel Info](3-payment-channel-info)
+* `Opened Payment Channel Info`: [Payment Channel Info](#3-payment-channel-info)
 
 *Errors*
 
@@ -276,7 +276,7 @@ the specified session.
 
 *Return*
 
-* `Open Payment Channels Info`: [List of [Payment Channel Info](3-payment-channel-info)]
+* `Open Payment Channels Info`: [List of [Payment Channel Info](#3-payment-channel-info)]
 
 *Errors*
 
@@ -299,7 +299,7 @@ Response to the notifications can be sent using the
 [`Respond To Payment Channel Proposal`](#7-respond-to-payment-channel-proposal)
 API before the notification expires.
 
-If the proposal was received from a `Peer` that is not found in the contacts
+If the proposal was received from a `Peer ID` that is not found in the ID
 provider of the session, the proposal will be automatically rejected by the
 node. User will still receive a notification of this proposal with the `Alias`
 of the peer set to the hex representation of its off-chain address in the
