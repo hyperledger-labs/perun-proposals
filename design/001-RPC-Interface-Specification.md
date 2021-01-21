@@ -7,6 +7,7 @@
   [perun-node#108](https://github.com/hyperledger-labs/perun-node/issues/108),
   [perun-node#100](https://github.com/hyperledger-labs/perun-node/issues/100),
   [perun-node#107](https://github.com/hyperledger-labs/perun-node/issues/107).
+  [perun-node#132](https://github.com/hyperledger-labs/perun-node/issues/132).
 
 
 <!-- Use the above format for issues on GitHub and full links for issues on
@@ -61,12 +62,16 @@ The node shall provide three sets of APIs:
 
 ### Data formats
 
-The following 3 data formats will be used in the APIs.
+In additiona to basic data types string, int64, uint64 and bool, the following 4
+data formats will be used in the APIs.
+
+Also, when data type is mentioned as [Duration string], it implies duration in
+this format `2h3m4s`.
 
 #### 1. Peer ID
 
 * `Alias`: [String] Alias for the peer. This will be used to reference a
-  peer in all API calls.
+   peer in all API calls.
 * `Off-Chain Address`: [String] Permanent address (cryptographic) of the
   peer in the off-chain network.
 * `Comm Address`: [String] Address (network) of the peer for off-chain
@@ -81,7 +86,7 @@ The following 3 data formats will be used in the APIs.
   user's ID provider. `self` is a special alias for the user of the
   node. Each entry in the list should be unique.
 * `Balance`: [List of String] Amount held by each channel participant, in
-  the same order as that in the `Aliases`. Each entry will be a nonnegative
+  the same order as that in the `Aliases`. Each entry will be a non-negative
   value and the length of balance list should be same as that of the Aliases
   list.
 
@@ -89,10 +94,10 @@ The following 3 data formats will be used in the APIs.
   be returned if:
     * the peer corresponding to any of the Aliases cannot be found in user's
       ID provider.
-    * alias list does not have an entry `self` corresponding to the user.
-    * alias list has duplicate entries.
-    * any of the amounts in the balance is negative or,
-    * lengths of Aliases and Balance list are different.
+    * Aliases does not have an entry `self` (it represents the user).
+    * Aliases has duplicate entries.
+    * Any of the amount in the balance is negative or,
+    * Lengths of Aliases and Balance lists are different.
 
 Note: Two lists (one each for Aliases and Balance) are used instead of a map.
 Because in the case of map, when more than one currencies are used in the same
@@ -110,33 +115,141 @@ size after serialization. While in case of list, the `Balance` list and
   states with different versions, channel will be settled according to the
   state with the highest version number.
 
-The following errors have specific meaning. Any other error should be returned
-as `Internal Error` with additional details in the error information field.
+#### 4. Contract Info
 
-1. `Unknown Session ID`: No session corresponding to the specified ID.
-2. `Unknown Proposal ID`: No proposal corresponding to the specified ID.
-3. `Unknown Channel ID`: No payment channel corresponding to the specified ID.
-4. `Unknown Alias`: Peer corresponding to the specified ID not found in
-   ID provider.
-5. `Unknown Version`: No pending payment request with the specified version of
-   state.
-6. `Invalid Amount`: Invalid amount string.
-7. `Invalid Balance`: Unknown currency or invalid amount string.
-8. `Invalid Configuration`: Invalid configuration detected.
-9. `Invalid Off-Chain Address`: Invalid off-chain address string.
-10. `No Active Subscription`: No active subscription was found.
-11. `Subscription Already Exists`: A subscription for this context already
-    exists.
-12. `Peer Alias Not Available`: Alias already used by another peer in the
-    ID provider.
-13. `Peer ID Exists`: Peer ID already available in the ID provider.
-14. `Peer Not Responding`: Peer did not respond within expected timeout.
-15. `Peer Rejected`: The request was rejected by the peer. Reason for rejection
-    should be included in the error information.
-16. `Response Timeout Expired`: Response to the notification was sent after the
-    timeout has expired.
-18. `Unclosed Payment Channels Exist`: Session cannot be closed (without force
-    option) as there are unclosed channels.
+* `Name`: [String] Name of the contract. Will be one of the following values: `Adjudicator`, `Asset`.
+* `Address`: [String] Address at which the contract is deployed.
+
+### Errors
+
+The errors returned by the API contain the following information:
+
+  1. Category: Indicates the cause of error and how it should be handled.
+  2. Code: Identifies specific errors.
+  3. Message: Describes the error.
+  5. Additional Info: Data necessary for handling the error as key value pairs.
+
+#### Error categories
+Below table summarizes the error categories:
+
+| Category | Cause| Handling |
+|-------------|-----------------|--------------|
+| Participant | Any channel participant not acting as per protocol | Negotiate with peer outside of the system and retry. |
+| Client | The request from client. Could be error in arguments or the configuration provided by the client to access external systems. | Depending upon the context, retry using valid arguments or by providing correct configuration to access external systems or after fixing the external systems. |
+| Protocol Fatal |  Unexpected failure in external system. Protocol was aborted, could result in loss of funds. | Requires manual inspection of the error |
+| Internal | Unknown error in the node. |  Requires manual inspection of the error |
+
+#### Error codes
+
+The errors returned by the perun-node application will contain one of the below
+error codes. The codes are three digits with
+
+- first digit representing the category (1,2,3,4 for participant, client, protocol fatal and internal respectively)
+- next two digits represent specific errors within that category.
+
+For each error code, data necessary for handling the error is passed in the
+additional info field as key value pairs. The keys are fixed for a given error
+code.
+
+##### 101 
+
+- Error           : Peer response timedout
+- Category        : Participant
+- Additional Info : PeerAlias [String], ResponseTimeout [Duration string]
+
+##### 102
+
+- Error           : Peer rejected
+- Category        : Participant
+- Additional Info : PeerAlias [String], Reason [String]
+
+##### 103
+
+- Error           : Peer not funded
+- Category        : Participant
+- Additional Info : PeerAlias [String], FundingTimeout [Duration string]
+
+##### 104
+
+- Error           : User response timedout
+- Category        : Participant
+- Additional Info : Expiry [Int64], ResponseReceivedAt [Int64] (unix time format)
+
+##### 201
+
+- Error           : Resource not found
+- Category        : Client
+- Additional Info : ResourceType [String], ResourceID [String]
+
+Note: Resource type takes only specific values, will be mentioned in each API.
+
+##### 202
+
+- Error           : Resource already exists
+- Category        : Client
+- Additional Info : ResourceType [String], ResourceID [String]
+
+Note: Resource type takes only specific values, will be mentioned in each API.
+
+##### 203
+
+- Error           : Invalid arguments
+- Category        : Client
+- Additional Info : Name [String], Value [String]
+
+##### 204
+
+- Error           : Failed pre-condition
+- Category        : Client
+- Additional Info : <additional-allowed>
+
+Only in this case, the additional info field can contain keys that are not
+defined here. These keys will be specified in the specific APIs that will use
+additional keys for this data type.
+
+##### 205
+
+- Error           : Invalid configuration
+- Category        : Client
+- Additional Info : Name [String], Value [String]
+
+##### 206
+
+- Error           : Blockchain node not reachable
+- Category        : Client
+- Additional Info : BlockchainNodeURL [String], ConnTimeout [Duration string]
+
+##### 207
+
+- Error           : Invalid contracts
+- Category        : Client
+- Additional Info : Contracts [List of [contract info](#4-contract-info)]
+
+##### 301
+
+- Error           : Protocol aborted as to tx timedout
+- Category        : Protocol
+- Additional Info : TxType [String], TxID [String], TxTimeout [Duration string]
+
+##### 302
+
+- Error           : Protocol aborted as blockchain node is not reachable
+- Category        : Protocol
+- Additional Info : BlockchainNodeURL [String]
+
+##### 401
+
+- Error           : Unknown internal error
+- Category        : Internal
+- Additional Info : Nil
+
+Note: When errors are described for each API, if the value of a field in the
+additional info is enclosed in `<>`, then the value will be filled in when
+creating the error.
+
+### API Description
+
+Description of the API is given below for accessing the node, session and channel related functionalities.
 
 ### Node
 
@@ -148,51 +261,50 @@ Returns the configuration parameters of the node.
 
 *Return*
 
-* `Chain Address`: [String] Address of the default blockchain node used by the
-  perun node.
-* `Adjudicator Address`: [String] Address of the default Adjudicator contract
-  used by the perun node.
-* `Asset Address`: [String] Address of the default Asset Holder contract used
-  by the perun node.
-* `Comm Types`: [List of String] Communication protocols supported by the
-  perun-node for off-chain communication.
-* `ID provider Types`: [List of String] ID Provider backends supported by the
-  perun-node.
+* `Chain Address`: [String] Address of the blockchain node.
+* `Adjudicator Address`: [String] Address of the Adjudicator contract.
+* `Asset Address`: [String] Address of the Asset Holder contract.
+* `Comm Types`: [List of String] Supported off-chain communication protocols.
+* `ID provider Types`: [List of String] Supportted ID Provider backends.
 
 #### 2. Open Session
 
-Open a new session for the given user with the specified configuration file.
-If the database has unclosed channels from the previous instance of the session,
-these channels will be restored and their last known info will be returned.
+Initializes a new session with the configuration in the given file. If channels
+were persisted during the previous instance of the session, they will be
+restored and their last known info will be returned.
 
 *Parameters*
 
-* `Config File`: [String] Path to the config file for the session. This should
-   be present on a file system path accessible by the node.
+* `Config File`: [String] Path to the config file for the session. It should
+  be present on a file system path accessible by the node.
 
-*Return*
+*Success response*
 
 * `Session ID`: [String] Unique ID of the session.
 * `Restored Channels Info`: [List of [Payment Channel Info](#3-payment-channel-info)]
 
-*Errors*
+*Error response*
 
-* `Invalid Configuration`
+If there is errors, it will be one of the following codes:
+- [205](#205)
+- [206](#206)
+- [207](#207)
+- [401](#401)
 
 #### 3. Time
 
-Returns the time as per perun node's clock in unix format. This time should be
-used to check the expiry of a notification.
+Returns the time as per perun node's clock. It should be used to check the
+expiry of notifications.
 
 *Parameters* none
 
 *Return*
 
-* `Time`: [int64] Time in unix format.
+* `Time`: [Int64] Time in unix format.
 
 #### 4. Help
 
-Returns the help message.
+Returns the list of user APIs served by the node.
 
 *Parameters* none
 
@@ -204,7 +316,7 @@ Returns the help message.
 
 #### 1. Add Peer ID
 
-Add a peer ID to the ID provider in the specified session.
+Adds the peer ID to the ID provider instance of the session.
 
 *Parameters*
 
@@ -217,15 +329,17 @@ Add a peer ID to the ID provider in the specified session.
 
 *Errors*
 
-* `Unknown Session ID`
-* `Peer Exists`
-* `Peer Alias Not Available`
-* `Invalid Off-Chain Address`
+If there is errors, it will be one of the following codes:
+- [201](#201) ResourceType: "session"
+- [202](#202) ResourceType: "peerID"
+- [203](#203) Name:"Peer" when peer alias is used for another peer.
+- [203](#203) Name:"OffChainAddress" when off-chain address is invalid.
+- [401](#401) Unknown Internal Error
 
 #### 2. Get Peer ID
 
-Get the peer ID corresponding to the given alias from the ID provider in
-the specified session.
+Gets the peer ID for the given alias from the ID provider instance of the
+session.
 
 *Parameters*
 
@@ -238,20 +352,26 @@ the specified session.
 
 *Errors*
 
-* `Unknown Session ID`
-* `Unknown Alias`
+If there is errors, it will be one of the following codes:
+- [201](#201) ResourceType: "session"
+- [202](#201) ResourceType: "peerID"
+- [401](#401) Unknown Internal Error
 
 #### 3. Open Payment Channel
 
-Open a payment channel with the participants and their balances as specified in
-the `Opening Balance`. `Challenge duration` is the time available for the node
-to refute in case of disputes when a state is registered on the blockchain.
+Proposes a payment channel to the participants with the specified opening
+balance, funds it on the blockchain when the proposal is accepted and sets it up
+for off-chain transactions when all the participants have funded the channel on
+the blockchain.
+
+`Challenge duration` is the time available for the node to refute in case of
+disputes when a state is registered on the blockchain.
 
 *Parameters*
 
 * `Session ID`: [String] Unique ID of the session.
 * `Opening Balance`: [[`Balance Info`](#2-balance-info)]
-* `Challenge Duration in Seconds`: [uint64]
+* `Challenge Duration in Seconds`: [Uint64]
 
 *Return*
 
@@ -259,16 +379,22 @@ to refute in case of disputes when a state is registered on the blockchain.
 
 *Errors*
 
-* `Unknown Session ID`
-* `Unknown Alias`
-* `Invalid Balance`
-* `Peer Not Responding`
-* `Peer Rejected`
+If there is errors, it will be one of the following codes:
+- [201](#201) ResourceType: "session"
+- [202](#201) ResourceType: "peerID"
+- [203](#203) Name:"Amount" when any of the amounts is invalid.
+- [203](#203) Name:"Currency" when any of the amounts is invalid.
+- [101](#101)
+- [102](#102)
+- [103](#103)
+- [301](#301) TxType: "Fund"
+- [302](#302)
+
 
 #### 4. Get Payment Channels Info
 
-Get the list of all payment channels that are open for off-chain transaction in
-the specified session.
+Gets the list of all payment channels that are open for off-chain transaction in
+the session.
 
 *Parameters*
 
@@ -280,15 +406,14 @@ the specified session.
 
 *Errors*
 
-* `Unknown Session ID`
+If there is errors, it will be one of the following codes:
+- [201](#201) ResourceType: "session"
 
 #### 5. Subscribe To Payment Channel Proposals
 
-Subscribe to notifications on new incoming payment channel proposals in the
-specified session.
-
-Only one subscription can be made at a time. Making a new subscription without
-canceling the previous one will return an error.
+Subscribes to notifications on new incoming payment channel proposals in the
+session. Only one subscription can be made at a time. Making a new subscription
+without canceling the previous one will return an error.
 
 The incoming channel proposal received when there was no subscription will
 have been cached by the node. Once a new subscription is made, node will send
@@ -304,7 +429,7 @@ provider of the session, the proposal will be automatically rejected by the
 node. User will still receive a notification of this proposal with the `Alias`
 of the peer set to the hex representation of its off-chain address in the
 `Opening Balance`. These notifications should not be responded to. If the user
-still responds to it, an `Unknown Proposal ID` error will be returned.
+till responds to it, a [201 Resource Not Found](#201) error will be returned.
 
 *Parameters*
 
@@ -316,8 +441,9 @@ still responds to it, an `Unknown Proposal ID` error will be returned.
 
 *Errors*
 
-* `Unknown Session ID`
-* `Subscription Already Exists`
+If there is errors, it will be one of the following codes:
+- [201](#201) ResourceType: "session"
+- [202](#202) ResourceType: "proposalsSub"
 
 *Notification*
 
@@ -325,12 +451,12 @@ Each notification sent to the user should contain the following data:
 
 * `Proposal ID`: [String] Unique ID of this channel proposal.
 * `Opening Balance`: [[`Balance Info`](#2-balance-info)]
-* `Challenge Duration in Seconds`: [uint64]
-* `Expiry`: [int64] Time (in unix format) before which response should be sent.
+* `Challenge Duration in Seconds`: [Uint64]
+* `Expiry`: [Int64] Time (in unix format) before which response should be sent.
 
 #### 6. Unsubscribe From Payment Channel Proposals
 
-Unsubscribe from notifications on new incoming payment channel proposals in the
+Unsubscribes from notifications on new incoming payment channel proposals in the
 specified session.
 
 *Parameters*
@@ -343,15 +469,16 @@ specified session.
 
 *Errors*
 
-* `Unknown Session ID`
-* `No Active Subscription`
+If there is errors, it will be one of the following codes:
+- [201](#201) ResourceType: "session"
+- [201](#201) ResourceType: "proposalsSub"
 
 #### 7. Respond To Payment Channel Proposal
 
-Respond to an incoming payment channel proposal for which a notification was
-received. Response should be sent before the notification expires. Use the
-`Time` API to fetch current time of the perun node to check notification
-expiry.
+Responds to the specified payment channel proposal for which a notification had
+been received. Response should be sent before the notification expires. Use the
+`Time` API to fetch current time of the perun node as as reference for checking
+notification expiry.
 
 *Parameters*
 
@@ -366,27 +493,28 @@ expiry.
 
 *Errors*
 
-* `Unknown Session ID`
-* `Unknown Channel ID`
-* `Unknown Proposal ID`
-* `Peer Not Responding`
-* `Response Timeout Expired`
+If there is errors, it will be one of the following codes:
+- [201](#201) ResourceType: "session"
+- [201](#201) ResourceType: "channel"
+- [201](#201) ResourceType: "proposal"
+- [104](#104)
+- [301](#301) TxType: "Fund"
+- [302](#302)
 
 #### 8. Close Session
 
-Close the specified session. All session data will be persisted to disk.
+Closes the specified session. All session data will be persisted to disk.
 
 `Force` parameter determines what happens when there are open channels in the
 session.
   * If `False` the API returns an error when there are open channels. This
     should be used by default.
   * If `True`, the session is forcibly closed and the API returns list of open
-    channels that were persisted. When a session is opened with the same data
-    files, these channels can be restored in open state.
-    However, use this with caution, as closing a session with open channels
-    creates a possibility for channel participants in any of the those open
-    open channels to register an older, invalid state on the blockchain and
-    finalize it.
+    channels that were persisted. When a session is re-opened with the same
+    config file, these channels can be restored in open state. However, use this
+    with caution, as closing a session with open channels creates a possibility
+    for channel participants in any of the those open open channels to register
+    an older, invalid state on the blockchain and finalize it.
 
 *Parameters*
 
@@ -402,15 +530,18 @@ session.
 
 *Errors*
 
-* `Unknown Session ID`
-* `Unclosed Payment Channels Exist`
+If there is errors, it will be one of the following codes:
+- [201](#201) ResourceType: "session"
+- [204](#204) Additional Info will contain an extra field:
+              OpenChannelsInfo: [List of [`Payment Channel Info`](#3-payment-channel-info)]
+              when session is closed with force=false and unclosed channels exists.
 
 ### Payment Channel
 
 #### 1. Send Payment Channel Update
 
-Send a payment channel update to the specified peer on the channel. Use
-`self` in the `payee` field to request payments.
+Sends a an update on the payment channel. Use `self` in the `payee` field to pay
+self and `<alias-of-the-peer> to pay the peer.
 
 *Parameters*
 
@@ -418,8 +549,6 @@ Send a payment channel update to the specified peer on the channel. Use
 * `Channel ID`: [String] Unique ID of the channel.
 * `Payee`: [String] Alias of the peer to which amount should be sent.
 * `Amount`: [String] Amount to send.
-* `IsFinal`: [bool] If 'True', this update will be marked as final and the
-  channel will be closed after this update.
 
 *Return*
 
@@ -427,19 +556,20 @@ Send a payment channel update to the specified peer on the channel. Use
 
 *Errors*
 
-* `Unknown Session ID`
-* `Unknown Channel ID`
-* `Unknown Alias`
-* `Invalid Amount`
-* `Peer Not Responding`
+If there is errors, it will be one of the following codes:
+- [201](#201) ResourceType: "session"
+- [201](#201) ResourceType: "channel"
+- [201](#201) ResourceType: "peerAlias"
+- [203](#203) Name:"Amount" when any of the amounts is invalid.
+- [101](#101)
+- [102](#102)
 
 #### 2. Subscribe To Payment Channel Updates
 
-Subscribe to notifications on new incoming payment channel updates for the
-specified channel in the specified session.
-
-Only one subscription can be made at a time. Making a new subscription without
-canceling the previous one will return an error.
+Subscribes to notifications on new incoming payment channel updates for the
+specified channel in the specified session. Only one subscription can be made at
+a time. Making a new subscription without canceling the previous one will return
+an error.
 
 The incoming payment channel update received when there was no subscription
 will have been cached by the node. Once a new subscription is made, node will
@@ -461,10 +591,10 @@ before the notification expires.
 
 *Errors*
 
-* `Unknown Session ID`
-* `Unknown Channel ID`
-* `Subscription Already Exists`
-
+If there is errors, it will be one of the following codes:
+- [201](#201) ResourceType: "session"
+- [201](#201) ResourceType: "channel"
+- [202](#202) ResourceType: "updatesSub"
 
 *Notification*
 
@@ -475,19 +605,19 @@ Each notification sent to the user should contain the following data:
 * `Status`: [String] Can be one of the three values: `Open`, `Final`, `Closed`.
     * `Open`: This is a normal channel update, if accepted off-chain state of
       the channel will be progressed to the proposed state.
-    * `Final`: Indicates if this is a final update. Channel will be closed if a
+    * `Final`: This is a final update. Channel will be closed if a
       final update is accepted.
-    * `Closed`: Indicates that the channel has been closed. This will be final
+    * `Closed`: The channel has been closed. This will be final
       update notification for the channel and the subscription should be
-      cancelled once such an update is received. No response is expected in
-      this case. If the user still responds, `Unknown Update ID` error will be
-      returned.
-* `Expiry`: [int64] Time (in unix format) before which response should be
+      cancelled once such an update is received. No response is expected in this
+      case. If the user still responds, [201 Resource Not Found](#201) error
+      will be returned.
+* `Expiry`: [Int64] Time (in unix format) before which response should be
   sent.
 
 #### 3. Unsubscribe From Payment Channel Updates
 
-Unsubscribe from notifications on new incoming payment channel updates for the
+Unsubscribes from notifications on new incoming payment channel updates for the
 specified channel in the specified session.
 
 *Parameters*
@@ -501,15 +631,16 @@ specified channel in the specified session.
 
 *Errors*
 
-* `Unknown Session ID`
-* `Unknown Channel ID`
-* `No Active Subscription`
+If there is errors, it will be one of the following codes:
+- [201](#201) ResourceType: "session"
+- [201](#201) ResourceType: "channel"
+- [201](#201) ResourceType: "updatesSub"
 
 #### 4. Respond To Payment Channel Update
 
-Respond to an incoming payment channel update for which a notification was
+Responds to an incoming payment channel update for which a notification had been
 received. Response should be sent before the notification expires. Use the
-`Time` API to fetch current time of the perun node to check notification
+`Time` API to fetch current time of the perun node for checking notification
 expiry.
 
 *Parameters*
@@ -525,15 +656,15 @@ expiry.
 
 *Errors*
 
-* `Unknown Session ID`
-* `Unknown Channel ID`
-* `Unknown Version`
-* `Peer Not Responding`
-* `Response Timeout Expired`
+If there is errors, it will be one of the following codes:
+- [201](#201) ResourceType: "session"
+- [201](#201) ResourceType: "channel"
+- [201](#201) ResourceType: "update"
+- [104](#104)
 
 #### 5. Get Payment Channel Info
 
-Get the current info for the specified payment channel.
+Gets the last agreed state of the specified payment channel.
 
 *Parameters*
 
@@ -546,13 +677,15 @@ Get the current info for the specified payment channel.
 
 *Errors*
 
-* `Unknown Session ID`
-* `Unknown Channel ID`
+If there is errors, it will be one of the following codes:
+- [201](#201) ResourceType: "session"
+- [201](#201) ResourceType: "channel"
 
 #### 6. Close Payment Channel
 
-Finalize the current balance of the payment channel on the blockchain and
-withdraw the amount corresponding to this user from the channel.
+Tries to finalize the last agreed state of the payment channel off-chain by sending a finalizing update and then settle it on the blockchan. If the channel participants reject/not respond to the finalizing update, the last agreed state will be finalized directly on the blockchain. The call will return after this.
+
+The node will then wait for the withdraw the balance as per the settled state to the user's account and send a channel update notification with update types as `Closed`.
 
 *Parameters*
 
@@ -565,8 +698,9 @@ withdraw the amount corresponding to this user from the channel.
 
 *Errors*
 
-* `Unknown Session ID`
-* `Unknown Channel ID`
+If there is errors, it will be one of the following codes:
+- [201](#201) ResourceType: "session"
+- [201](#201) ResourceType: "channel"
 
 ## Rationale
 
