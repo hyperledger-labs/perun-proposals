@@ -36,7 +36,8 @@ The node shall provide three sets of APIs:
     1. [Get config](#1-get-config)
     2. [Open Session](#2-open-session)
     3. [Time](#3-time)
-    4. [Help](#4-help)
+    4. [Register Currency](#4-register-currency)
+    5. [Help](#5-help)
 
 2. Session APIs - For accessing the session related functionality. Each request
    should include a Session ID. Following APIs should be provided:
@@ -49,6 +50,7 @@ The node shall provide three sets of APIs:
     6. [Unsubscribe From Payment Channel Proposals](#6-unsubscribe-from-payment-channel-proposals)
     7. [Respond To Payment Channel Proposal](#7-respond-to-payment-channel-proposal)
     8. [Close Session](#8-close-session)
+    9. [Deploy ERC20 Asset Holder](#9-deploy-erc20-asset-holder)
 
 3. Channel APIs - For accessing the channel related functionality. Each request
    should include a Session ID & Channel ID. Following APIs should be provided:
@@ -62,11 +64,17 @@ The node shall provide three sets of APIs:
 
 ### Data formats
 
-In additiona to basic data types string, int64, uint64 and bool, the following 4
+In additiona to basic data types string, int64, uint64 and bool, the following 5
 data formats will be used in the APIs.
 
 Also, when data type is mentioned as [Duration string], it implies duration in
 this format `2h3m4s`.
+
+`String` type is used for integers instead of numbers, because these number of
+digits vary widely. For examples, amount in `ETH` currency should have 0 to a
+maximum of 9 digits after the decimal place. Using numbers might lead to errors
+arising due to approximation (during calculations) or during serialization /
+de-serialization.
 
 #### 1. Peer ID
 
@@ -81,14 +89,15 @@ this format `2h3m4s`.
 
 #### 2. Balance Info
 
-* `Currency`: [String] Currency used for specifying the balance.
+* `Currencies`: [List of String] Currencies used for specifying the balance.
 * `Aliases`: [List of String] Alias of each channel participants, as in the
   user's ID provider. `self` is a special alias for the user of the
   node. Each entry in the list should be unique.
-* `Balance`: [List of String] Amount held by each channel participant, in
-  the same order as that in the `Aliases`. Each entry will be a non-negative
-  value and the length of balance list should be same as that of the Aliases
-  list.
+* `Balances`: [List of List of String] Amount held by each channel participant.
+  Each `List of string` correspond to balance in a specific currency, in the
+  same order as in the `Currencies`. Within each list, the entries correspond to
+  the amount of channel participant for that currency, in the same order as in
+  the `Aliases`. Amount should be a non-negative value.
 
 * When using the `Balance Info` as a parameter in API calls, an error will
   be returned if:
@@ -97,13 +106,16 @@ this format `2h3m4s`.
     * Aliases does not have an entry `self` (it represents the user).
     * Aliases has duplicate entries.
     * Any of the amount in the balance is negative or,
-    * Lengths of Aliases and Balance lists are different.
+    * Number of lists of string in `Balances` is not same as length of `Aliases`
+      are different.
+    * Number of entries in each list of string in `Balances` is not same as the
+      length of `Currencies`.
 
-Note: Two lists (one each for Aliases and Balance) are used instead of a map.
-Because in the case of map, when more than one currencies are used in the same
-channel (in near future), the keys will be duplicated leading to larger data
-size after serialization. While in case of list, the `Balance` list and
-`Currency` can be combined to a map of Balance for each currency.
+Note: Lists are used instead of a map. Because in the case of map, when more
+than one currencies are used in the same channel, the keys will be duplicated
+leading to larger data size after serialization. While in case of list, the
+`Balance` list and `Currency` can be combined to a map of Balance for each
+currency.
 
 #### 3. Payment Channel Info
 
@@ -119,6 +131,13 @@ size after serialization. While in case of list, the `Balance` list and
 
 * `Name`: [String] Name of the contract. Will be one of the following values: `Adjudicator`, `Asset`.
 * `Address`: [String] Address at which the contract is deployed.
+
+#### 5. Payment
+
+* `Currency`: [String] Currency for this payment.
+* `Payee`   : [String] Person being paid. If it is the user itsel, use `self`.
+* `Amount`  : [String] Amount. The maximum number digits this number can have
+              after the decimal point depends on the currency.
 
 ### Errors
 
@@ -302,7 +321,32 @@ expiry of notifications.
 
 * `Time`: [Int64] Time in unix format.
 
-#### 4. Help
+#### 4. Register Currency
+
+Register a new currency. The currency can be any ERC20 token. An asset holder
+contract that was deployed specifically for this ERC20 token is required. If
+such a contract does not exists, then use
+[Deploy ERC20 Asset Holder](9-deploy-erc20-asset-holder) API instead, because an
+on-chain account with sufficient balance is required for deploying contracts.
+
+*Parameters*
+
+* `Currency`: [String] Symbol of the ERC20 token, as specified in the token contract.
+* `Asset holder`: [String] Address of the asset holder contract for this ERC20 token.
+
+*Success response*
+
+*Error response*
+
+If there is errors, it will be one of the following codes:
+- [202](#202) ResourceType: Currency  when the currency is already registered
+              with the same asset holder address.
+- [203](#203) Name:<AssetHolder> when the currency is already registered with a
+              different asset older address.
+- [207](#207)
+- [401](#401)
+
+#### 5. Help
 
 Returns the list of user APIs served by the node.
 
@@ -542,19 +586,50 @@ If there is errors, it will be one of the following codes:
               when session is closed with force=false and unclosed channels exists.
 - [401](#401)
 
+#### 9. Deploy ERC20 Asset Holder
+
+Deploys an asset holder contract for an ERC20 token that is not already
+registered as a currency. User's on-chain account will be used for funding this
+deploy transaction. The token is then registered as new currency, with the
+symbol taken from the `Symbol` API of the ERC20 token contract.
+
+Returns error, if the ERC20 token is already registered as a currency with the
+node. For this validation, symbol of the token obtained from the `Symbol` API
+will be used.
+
+*Parameters*
+
+* `Session ID`: [String] Unique ID of the session.
+* `ERC20 Token Address`: [String] Address of the ERC20 token contract.
+
+*Return*
+
+* `Asset holder Address`: [String] Address of the ERC20 token contract.
+* `Currency`: [String] Symbol for this ERC20 token.
+
+*Errors*
+
+If there is errors, it will be one of the following codes:
+- [201](#201) ResourceType: "session"
+- [202](#202) ResourceType: "currency"
+- [301](#301)
+- [302](#302)
+- [401](#401)
+
+
 ### Payment Channel
 
 #### 1. Send Payment Channel Update
 
-Sends a an update on the payment channel. Use `self` in the `payee` field to pay
-self and `<alias-of-the-peer> to pay the peer.
+Sends a an update on the payment channel. Use `self` in the `payee` field of
+[Payment](#5-payment) to pay the user itself and `<alias-of-the-peer> to pay the
+peer.
 
 *Parameters*
 
 * `Session ID`: [String] Unique ID of the session.
 * `Channel ID`: [String] Unique ID of the channel.
-* `Payee`: [String] Alias of the peer to which amount should be sent.
-* `Amount`: [String] Amount to send.
+* `Payments`: [List of [Payment](#5-payment)]
 
 *Return*
 
@@ -651,6 +726,10 @@ Responds to an incoming payment channel update for which a notification had been
 received. Response should be sent before the notification expires. Use the
 `Time` API to fetch current time of the perun node for checking notification
 expiry.
+
+If multiple payments (in different currencies) is received, the user can either
+accept or reject all of them. It is not possible to accept only specific
+payments and reject others.
 
 *Parameters*
 
