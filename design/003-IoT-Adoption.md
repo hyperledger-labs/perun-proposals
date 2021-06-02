@@ -10,7 +10,7 @@
 
 ## Summary
 
-Figure 1 shows how state channels help to reduce the number of transactions with the underlying DLT by shifting most transactions directly to the peer-to-peer channel which is set up between two state channel nodes. While this enables many use cases, the technology is currently not tailored for constrained (memory, compute, connectivity) IoT devices. To reduce the resource consumption, the functionality can be split between a light client and a state channel node, but would still need dedicated channels funded and managed for the different devices / device identities.
+Figure 1 shows how state channels help to reduce the number of transactions with the underlying DLT by shifting most transactions directly to the peer-to-peer channel which is set up between two state channel nodes. While this enables many use cases, the technology is currently not tailored for constrained (memory, compute, connectivity) IoT devices. To reduce the resource consumption, the functionality can be split between a light client and a state channel node. The state channel node will be responsible for setting up the channels, handling disputes and settling them, while the light client will be will be used only for transacting on these channels.
 
 By separating the setup of the channels from the transaction over the channels both physically (node is responsible for DLT communication, device for peer-to-peer transactions   as well as updating node in periodic time slots; cf. Figure 2) and logically (the entity funding a channel, e.g. a node, can be different from the one using the channel for transactions, e.g. the device; cf. Figure 3), constrained IoT devices are entirely decoupled from any direct DLT communication (for channel opening, watching for disputes and closing) but can still participate in a 2nd layer state channel protocol and use that for direct peer-to-peer transactions. In addition, a gateway can be applied if a device has limited connectivity to communicate to the new components, which are handling the DLT communication.
 
@@ -36,9 +36,11 @@ As shown in Figure 2, the following main components should be available as indep
 ## Figures
 
 ![Current scenario](003/current-structure.svg)
+
 Figure 1: Current scenario: State channel nodes handle both on-chain  and off-chain transactions.
 
 ![Proposed scenario](003/structure.svg)
+
 Figure 2: Proposed   scenario: State channels nodes handle on-chain and devices handle off-chain transactions.
 
 ## Impact
