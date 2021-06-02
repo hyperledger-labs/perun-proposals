@@ -1,0 +1,32 @@
+@startuml structure
+
+cloud "DLT Network" as dlt {
+    component "Smart Contracts" as sc
+}
+
+frame "Entitiy Border 1" as entityborder1 {
+    agent "Device 1" as device1
+    agent "Node 1" as node1
+}
+
+frame "Entitiy Border 2" as entityborder2 {
+    agent "Funding Component 2" as funding2
+    agent "Device 2" as device2
+    agent "Gateway 2" as gateway2
+    agent "Watching Component 2" as watcher2
+}
+
+funding2 --> sc : DLT communication\n(Deposit,Register,\nConclude,Withdraw)
+
+
+node1 --> sc : DLT communication\n(Deposit,Register,\nDispute,\nConclude,Withdraw)
+watcher2 --> sc : DLT communication\n(Dispute)
+
+node1 <--> device1: Informs
+funding2 <--> gateway2: Communicates
+watcher2 <--> gateway2: Informs
+gateway2 <--> device2: Informs
+
+device1 <--> device2 : Off-chain transactions
+
+@enduml

@@ -1,0 +1,23 @@
+@startuml current-structure
+
+cloud "DLT Network" as dlt {
+    component "Smart Contracts" as sc
+}
+
+frame "Entitiy Border 1" as entityborder1 {
+    agent "Device 1" as device1
+}
+
+frame "Entitiy Border 2" as entityborder2 {
+    agent "Device 2" as device2
+    agent "Node 2" as node2
+}
+
+device1 -right-> sc : DLT communication
+node2 -left-> sc : DLT communication
+
+node2 <--> device2: Communication
+
+device1 <-right-> node2 : Off-chain transactions
+
+@enduml
