@@ -334,7 +334,7 @@ If there is errors, it will be one of the following codes:
 - [202](#202) ResourceType: "peerID"
 - [203](#203) Name:"Peer" when peer alias is used for another peer.
 - [203](#203) Name:"OffChainAddress" when off-chain address is invalid.
-- [401](#401) Unknown Internal Error
+- [401](#401)
 
 #### 2. Get Peer ID
 
@@ -355,7 +355,7 @@ session.
 If there is errors, it will be one of the following codes:
 - [201](#201) ResourceType: "session"
 - [202](#201) ResourceType: "peerID"
-- [401](#401) Unknown Internal Error
+- [401](#401)
 
 #### 3. Open Payment Channel
 
@@ -389,6 +389,7 @@ If there is errors, it will be one of the following codes:
 - [103](#103)
 - [301](#301) TxType: "Fund"
 - [302](#302)
+- [401](#401)
 
 
 #### 4. Get Payment Channels Info
@@ -408,6 +409,7 @@ the session.
 
 If there is errors, it will be one of the following codes:
 - [201](#201) ResourceType: "session"
+- [401](#401)
 
 #### 5. Subscribe To Payment Channel Proposals
 
@@ -444,6 +446,7 @@ till responds to it, a [201 Resource Not Found](#201) error will be returned.
 If there is errors, it will be one of the following codes:
 - [201](#201) ResourceType: "session"
 - [202](#202) ResourceType: "proposalsSub"
+- [401](#401)
 
 *Notification*
 
@@ -472,6 +475,7 @@ specified session.
 If there is errors, it will be one of the following codes:
 - [201](#201) ResourceType: "session"
 - [201](#201) ResourceType: "proposalsSub"
+- [401](#401)
 
 #### 7. Respond To Payment Channel Proposal
 
@@ -500,6 +504,7 @@ If there is errors, it will be one of the following codes:
 - [104](#104)
 - [301](#301) TxType: "Fund"
 - [302](#302)
+- [401](#401)
 
 #### 8. Close Session
 
@@ -535,6 +540,7 @@ If there is errors, it will be one of the following codes:
 - [204](#204) Additional Info will contain an extra field:
               OpenChannelsInfo: [List of [`Payment Channel Info`](#3-payment-channel-info)]
               when session is closed with force=false and unclosed channels exists.
+- [401](#401)
 
 ### Payment Channel
 
@@ -563,6 +569,7 @@ If there is errors, it will be one of the following codes:
 - [203](#203) Name:"Amount" when any of the amounts is invalid.
 - [101](#101)
 - [102](#102)
+- [401](#401)
 
 #### 2. Subscribe To Payment Channel Updates
 
@@ -595,6 +602,7 @@ If there is errors, it will be one of the following codes:
 - [201](#201) ResourceType: "session"
 - [201](#201) ResourceType: "channel"
 - [202](#202) ResourceType: "updatesSub"
+- [401](#401)
 
 *Notification*
 
@@ -635,6 +643,7 @@ If there is errors, it will be one of the following codes:
 - [201](#201) ResourceType: "session"
 - [201](#201) ResourceType: "channel"
 - [201](#201) ResourceType: "updatesSub"
+- [401](#401)
 
 #### 4. Respond To Payment Channel Update
 
@@ -661,6 +670,7 @@ If there is errors, it will be one of the following codes:
 - [201](#201) ResourceType: "channel"
 - [201](#201) ResourceType: "update"
 - [104](#104)
+- [401](#401)
 
 #### 5. Get Payment Channel Info
 
@@ -680,6 +690,7 @@ Gets the last agreed state of the specified payment channel.
 If there is errors, it will be one of the following codes:
 - [201](#201) ResourceType: "session"
 - [201](#201) ResourceType: "channel"
+- [401](#401)
 
 #### 6. Close Payment Channel
 
@@ -701,6 +712,7 @@ The node will then wait for the withdraw the balance as per the settled state to
 If there is errors, it will be one of the following codes:
 - [201](#201) ResourceType: "session"
 - [201](#201) ResourceType: "channel"
+- [401](#401)
 
 ## Rationale
 
