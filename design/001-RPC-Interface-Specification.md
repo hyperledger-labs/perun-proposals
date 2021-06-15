@@ -64,7 +64,7 @@ The node shall provide three sets of APIs:
 
 ### Data formats
 
-In additiona to basic data types string, int64, uint64 and bool, the following 5
+In addition to basic data types string, int64, uint64 and bool, the following 5
 data formats will be used in the APIs.
 
 Also, when data type is mentioned as [Duration string], it implies duration in
@@ -135,7 +135,7 @@ currency.
 #### 5. Payment
 
 * `Currency`: [String] Currency for this payment.
-* `Payee`   : [String] Person being paid. If it is the user itsel, use `self`.
+* `Payee`   : [String] Person being paid. If it is the user itself, use `self`.
 * `Amount`  : [String] Amount. The maximum number digits this number can have
               after the decimal point depends on the currency.
 
@@ -170,9 +170,9 @@ For each error code, data necessary for handling the error is passed in the
 additional info field as key value pairs. The keys are fixed for a given error
 code.
 
-##### 101 
+##### 101
 
-- Error           : Peer response timedout
+- Error           : Peer response timed out
 - Category        : Participant
 - Additional Info : PeerAlias [String], ResponseTimeout [Duration string]
 
@@ -234,19 +234,13 @@ additional keys for this data type.
 
 ##### 206
 
-- Error           : Blockchain node not reachable
-- Category        : Client
-- Additional Info : BlockchainNodeURL [String], ConnTimeout [Duration string]
-
-##### 207
-
 - Error           : Invalid contracts
 - Category        : Client
 - Additional Info : Contracts [List of [contract info](#4-contract-info)]
 
 ##### 301
 
-- Error           : Protocol aborted as to tx timedout
+- Error           : Protocol aborted as to tx timed out
 - Category        : Protocol
 - Additional Info : TxType [String], TxID [String], TxTimeout [Duration string]
 
@@ -284,7 +278,7 @@ Returns the configuration parameters of the node.
 * `Adjudicator Address`: [String] Address of the Adjudicator contract.
 * `Asset Address`: [String] Address of the Asset Holder contract.
 * `Comm Types`: [List of String] Supported off-chain communication protocols.
-* `ID provider Types`: [List of String] Supportted ID Provider backends.
+* `ID provider Types`: [List of String] Supported ID Provider backends.
 
 #### 2. Open Session
 
@@ -304,10 +298,10 @@ restored and their last known info will be returned.
 
 *Error response*
 
-If there is errors, it will be one of the following codes:
-- [205](#205)
-- [206](#206)
-- [207](#207)
+If there is an error, it will be one of the following codes:
+- [203](#203) Name:"configFile" when config file cannot be accessed.
+- [205](#205) when any of the configuration is invalid.
+- [206](#206) when the contracts at the addresses in config are invalid.
 - [401](#401)
 
 #### 3. Time
@@ -338,12 +332,12 @@ on-chain account with sufficient balance is required for deploying contracts.
 
 *Error response*
 
-If there is errors, it will be one of the following codes:
-- [202](#202) ResourceType: Currency  when the currency is already registered
+If there is an error, it will be one of the following codes:
+- [202](#202) ResourceType: "currency"  when the currency is already registered
               with the same asset holder address.
-- [203](#203) Name:<AssetHolder> when the currency is already registered with a
+- [203](#203) Name:"assetHolder" when the currency is already registered with a
               different asset older address.
-- [207](#207)
+- [206](#206) when the contracts at the given address is invalid.
 - [401](#401)
 
 #### 5. Help
@@ -373,11 +367,11 @@ Adds the peer ID to the ID provider instance of the session.
 
 *Errors*
 
-If there is errors, it will be one of the following codes:
-- [201](#201) ResourceType: "session"
-- [202](#202) ResourceType: "peerID"
-- [203](#203) Name:"Peer" when peer alias is used for another peer.
-- [203](#203) Name:"OffChainAddress" when off-chain address is invalid.
+If there is an error, it will be one of the following codes:
+- [201](#201) ResourceType: "session" when session ID is not known.
+- [202](#202) ResourceType: "peerID" when peer ID is already registered.
+- [203](#203) Name:"peerAlias" when peer alias is used for another peer.
+- [203](#203) Name:"offChainAddress" when off-chain address is invalid.
 - [401](#401)
 
 #### 2. Get Peer ID
@@ -396,10 +390,9 @@ session.
 
 *Errors*
 
-If there is errors, it will be one of the following codes:
-- [201](#201) ResourceType: "session"
-- [202](#201) ResourceType: "peerID"
-- [401](#401)
+If there is an error, it will be one of the following codes:
+- [201](#201) ResourceType: "session" when session ID is not known.
+- [201](#201) ResourceType: "peerID" when peer alias is not known.
 
 #### 3. Open Payment Channel
 
@@ -423,23 +416,23 @@ disputes when a state is registered on the blockchain.
 
 *Errors*
 
-If there is errors, it will be one of the following codes:
-- [201](#201) ResourceType: "session"
-- [202](#201) ResourceType: "peerID"
+If there is an error, it will be one of the following codes:
+- [201](#201) ResourceType: "session" when session ID is not known.
+- [201](#201) ResourceType: "peerID" when any of the peer aliases are not known.
+- [201](#201) ResourceType: "currency" when the currency is not known.
 - [203](#203) Name:"Amount" when any of the amounts is invalid.
-- [203](#203) Name:"Currency" when any of the amounts is invalid.
-- [101](#101)
-- [102](#102)
-- [103](#103)
-- [301](#301) TxType: "Fund"
-- [302](#302)
+- [101](#101) when peer request times out.
+- [102](#102) when peer rejects the request.
+- [103](#103) when peer did not fund the channel in time.
+- [301](#301) TxType: "Fund" when funding tx times out.
+- [302](#302) when connection to blockchain drops while funding.
 - [401](#401)
 
 
 #### 4. Get Payment Channels Info
 
-Gets the list of all payment channels that are open for off-chain transaction in
-the session.
+Gets the list of all payment channels in the session with their latest agreed
+state.
 
 *Parameters*
 
@@ -451,9 +444,8 @@ the session.
 
 *Errors*
 
-If there is errors, it will be one of the following codes:
-- [201](#201) ResourceType: "session"
-- [401](#401)
+If there is an error, it will be one of the following codes:
+- [201](#201) ResourceType: "session" when session ID is not known.
 
 #### 5. Subscribe To Payment Channel Proposals
 
@@ -487,10 +479,9 @@ till responds to it, a [201 Resource Not Found](#201) error will be returned.
 
 *Errors*
 
-If there is errors, it will be one of the following codes:
-- [201](#201) ResourceType: "session"
-- [202](#202) ResourceType: "proposalsSub"
-- [401](#401)
+If there is an error, it will be one of the following codes:
+- [201](#201) ResourceType: "session"  when session ID is not known.
+- [202](#202) ResourceType: "proposalsSub" when a subscription already exists.
 
 *Notification*
 
@@ -516,10 +507,9 @@ specified session.
 
 *Errors*
 
-If there is errors, it will be one of the following codes:
-- [201](#201) ResourceType: "session"
-- [201](#201) ResourceType: "proposalsSub"
-- [401](#401)
+If there is an error, it will be one of the following codes:
+- [201](#201) ResourceType: "session"  when session ID is not known.
+- [201](#201) ResourceType: "proposalsSub" when a subscription does not exist.
 
 #### 7. Respond To Payment Channel Proposal
 
@@ -541,13 +531,14 @@ notification expiry.
 
 *Errors*
 
-If there is errors, it will be one of the following codes:
-- [201](#201) ResourceType: "session"
-- [201](#201) ResourceType: "channel"
-- [201](#201) ResourceType: "proposal"
-- [104](#104)
-- [301](#301) TxType: "Fund"
-- [302](#302)
+If there is an error, it will be one of the following codes:
+- [201](#201) ResourceType: "session"  when session ID is not known.
+- [201](#201) ResourceType: "proposal"  when proposal ID is not known.
+- [203](#203) when session is closed.
+- [103](#103) when peer did not fund the channel in time.
+- [104](#104) when user responded after time out expired.
+- [301](#301) TxType: "Fund" when funding tx times out.
+- [302](#302) when connection to blockchain drops while funding.
 - [401](#401)
 
 #### 8. Close Session
@@ -579,11 +570,12 @@ session.
 
 *Errors*
 
-If there is errors, it will be one of the following codes:
-- [201](#201) ResourceType: "session"
-- [204](#204) Additional Info will contain an extra field:
+If there is an error, it will be one of the following codes:
+- [201](#201) ResourceType: "session" when session ID is not known.
+- [204](#204) when session is closed with force=false and unclosed channels
+              exists.  Additional Info will contain an extra field:
               OpenChannelsInfo: [List of [`Payment Channel Info`](#3-payment-channel-info)]
-              when session is closed with force=false and unclosed channels exists.
+
 - [401](#401)
 
 #### 9. Deploy ERC20 Asset Holder
@@ -609,7 +601,7 @@ will be used.
 
 *Errors*
 
-If there is errors, it will be one of the following codes:
+If there is an error, it will be one of the following codes:
 - [201](#201) ResourceType: "session"
 - [202](#202) ResourceType: "currency"
 - [301](#301)
@@ -621,9 +613,9 @@ If there is errors, it will be one of the following codes:
 
 #### 1. Send Payment Channel Update
 
-Sends a an update on the payment channel. Use `self` in the `payee` field of
-[Payment](#5-payment) to pay the user itself and `<alias-of-the-peer> to pay the
-peer.
+Sends a payment update on the channel that can send or request funds. Use
+`self` in the `payee` field of [Payment](#5-payment) to pay the user itself and
+`<alias-of-the-peer> to pay the peer.
 
 *Parameters*
 
@@ -637,13 +629,14 @@ peer.
 
 *Errors*
 
-If there is errors, it will be one of the following codes:
-- [201](#201) ResourceType: "session"
-- [201](#201) ResourceType: "channel"
-- [201](#201) ResourceType: "peerAlias"
+If there is an error, it will be one of the following codes:
+- [201](#201) ResourceType: "session" when session ID is not known.
+- [201](#201) ResourceType: "channel" when channel ID is not known.
+- [201](#201) ResourceType: "peerID" when any of the peer alias are not known.
+- [201](#201) ResourceType: "currency" when any of the currencies are not known.
 - [203](#203) Name:"Amount" when any of the amounts is invalid.
-- [101](#101)
-- [102](#102)
+- [101](#101) when peer request times out.
+- [102](#102) when peer rejects the request.
 - [401](#401)
 
 #### 2. Subscribe To Payment Channel Updates
@@ -673,11 +666,10 @@ before the notification expires.
 
 *Errors*
 
-If there is errors, it will be one of the following codes:
-- [201](#201) ResourceType: "session"
-- [201](#201) ResourceType: "channel"
-- [202](#202) ResourceType: "updatesSub"
-- [401](#401)
+If there is an error, it will be one of the following codes:
+- [201](#201) ResourceType: "session" when session ID is not known.
+- [201](#201) ResourceType: "channel" when channel ID is not known.
+- [202](#202) ResourceType: "updatesSub" when a subscription already exists.
 
 *Notification*
 
@@ -714,11 +706,10 @@ specified channel in the specified session.
 
 *Errors*
 
-If there is errors, it will be one of the following codes:
-- [201](#201) ResourceType: "session"
-- [201](#201) ResourceType: "channel"
-- [201](#201) ResourceType: "updatesSub"
-- [401](#401)
+If there is an error, it will be one of the following codes:
+- [201](#201) ResourceType: "session" when session ID is not known.
+- [201](#201) ResourceType: "channel" when channel ID is not known.
+- [201](#201) ResourceType: "updatesSub" when a subscription does not exist.
 
 #### 4. Respond To Payment Channel Update
 
@@ -744,11 +735,11 @@ payments and reject others.
 
 *Errors*
 
-If there is errors, it will be one of the following codes:
-- [201](#201) ResourceType: "session"
-- [201](#201) ResourceType: "channel"
-- [201](#201) ResourceType: "update"
-- [104](#104)
+If there is an error, it will be one of the following codes:
+- [201](#201) ResourceType: "session" when session ID is not known.
+- [201](#201) ResourceType: "channel" when channel ID is not known.
+- [201](#201) ResourceType: "update" when update ID is not known.
+- [104](#104) when user responded after time out expired.
 - [401](#401)
 
 #### 5. Get Payment Channel Info
@@ -766,16 +757,22 @@ Gets the last agreed state of the specified payment channel.
 
 *Errors*
 
-If there is errors, it will be one of the following codes:
-- [201](#201) ResourceType: "session"
-- [201](#201) ResourceType: "channel"
-- [401](#401)
+If there is an error, it will be one of the following codes:
+- [201](#201) ResourceType: "session" when session ID is not known.
+- [201](#201) ResourceType: "channel" when channel ID is not known.
 
 #### 6. Close Payment Channel
 
-Tries to finalize the last agreed state of the payment channel off-chain by sending a finalizing update and then settle it on the blockchan. If the channel participants reject/not respond to the finalizing update, the last agreed state will be finalized directly on the blockchain. The call will return after this.
+Closes the channel. First it tries to finalize the last agreed state of the
+payment channel off-chain (by sending a finalizing update) and then settling it
+on the blockchain. If the channel participants reject/not respond to the
+finalizing update, the last agreed state will be finalized directly on the
+blockchain. The call will return after this.
 
-The node will then wait for the withdraw the balance as per the settled state to the user's account and send a channel update notification with update types as `Closed`.
+The node will then wait for the challenge duration to pass (if the channel was
+directly settled on the blockchain) and the withdraw the balance as per the
+settled state to the user's account. It then sends a channel update
+notification with update types as `Closed`.
 
 *Parameters*
 
@@ -788,9 +785,17 @@ The node will then wait for the withdraw the balance as per the settled state to
 
 *Errors*
 
-If there is errors, it will be one of the following codes:
-- [201](#201) ResourceType: "session"
-- [201](#201) ResourceType: "channel"
+If there are any errors in the closing update, it will be one of the following codes:
+- [301](#301) TxType: "Conclude" or "ConcludeFinal" when on-chain finalizing tx times out.
+- [301](#301) TxType: "Withdraw"  when withdrawing tx times out.
+- [302](#302) when connection to blockchain drops while registering.
+- [401](#401)
+
+If there is an error returned by this API, it will be one of the following codes:
+- [201](#201) ResourceType: "session" when session ID is not known.
+- [201](#201) ResourceType: "channel" when channel ID is not known.
+- [301](#301) TxType: "Register" when registering tx times out.
+- [302](#302) when connection to blockchain drops while registering.
 - [401](#401)
 
 ## Rationale
