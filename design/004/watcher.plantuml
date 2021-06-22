@@ -1,0 +1,53 @@
+@startuml watcher
+!pragma teoz true
+hide footbox
+
+participant "Main component" as main_component
+participant "Watching Component\nRemote orLocal" as watcher
+
+group Funding
+
+activate main_component
+main_component -> main_component: Open Channel
+
+main_component -> watcher: Start Watching
+activate watcher
+
+end
+
+group Transacting 
+
+main_component <-> main_component: Off-chain transactions.
+
+opt Periodically
+main_component -> watcher: State with signatures
+end
+
+end
+
+group Dispute
+
+watcher -> watcher: Received Registered Event
+
+opt if state is not latest
+watcher -> watcher: Refute
+watcher -> main_component: Refuted
+note over main_component, watcher #LightGray
+If watcher has registered a state,
+alice can then initiate channel close.
+endnote
+end
+
+end
+
+
+group Close 
+main_component -> watcher: Stop watching
+deactivate watcher
+main_component -> main_component: Close channel
+
+end
+
+
+
+@enduml

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="674px" preserveAspectRatio="none" style="width:494px;height:674px;" version="1.1" viewBox="0 0 494 674" width="494px" zoomAndPan="magnify"><defs><filter height="300%" id="fx0iiako6qm09" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><rect fill="#FFFFFF" filter="url(#fx0iiako6qm09)" height="93.3984" style="stroke:#000000;stroke-width:2.0;" width="347" x="29" y="68.5938"/><rect fill="#FFFFFF" filter="url(#fx0iiako6qm09)" height="128.5313" style="stroke:#000000;stroke-width:2.0;" width="240" x="77" y="174.9922"/><rect fill="#FFFFFF" filter="url(#fx0iiako6qm09)" height="51.2656" style="stroke:#000000;stroke-width:2.0;" width="196" x="96" y="243.2578"/><rect fill="#FFFFFF" filter="url(#fx0iiako6qm09)" height="224.9297" style="stroke:#000000;stroke-width:2.0;" width="472" x="8" y="316.5234"/><rect fill="#FFFFFF" filter="url(#fx0iiako6qm09)" height="147.6641" style="stroke:#000000;stroke-width:2.0;" width="349" x="27" y="384.7891"/><rect fill="#FFFFFF" filter="url(#fx0iiako6qm09)" height="93.3984" style="stroke:#000000;stroke-width:2.0;" width="280" x="96" y="554.4531"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="112" x2="112" y1="56.5938" y2="666.8516"/><rect fill="#FFFFFF" filter="url(#fx0iiako6qm09)" height="576.125" style="stroke:#A80036;stroke-width:1.0;" width="10" x="107" y="90.7266"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="276" x2="276" y1="56.5938" y2="666.8516"/><rect fill="#FFFFFF" filter="url(#fx0iiako6qm09)" height="443.7266" style="stroke:#A80036;stroke-width:1.0;" width="10" x="271" y="153.9922"/><rect fill="#FEFECE" filter="url(#fx0iiako6qm09)" height="30.2969" style="stroke:#A80036;stroke-width:1.5;" width="130" x="45" y="21.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="116" x="52" y="41.292">Main component</text><rect fill="#FEFECE" filter="url(#fx0iiako6qm09)" height="46.5938" style="stroke:#A80036;stroke-width:1.5;" width="164" x="192" y="5"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="150" x="199" y="24.9951">Watching Component</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="108" x="220" y="41.292">Remote orLocal</text><path d="M29,68.5938 L134,68.5938 L134,75.5938 L124,85.5938 L29,85.5938 L29,68.5938 " fill="#EEEEEE" style="stroke:#000000;stroke-width:1.0;"/><rect fill="none" height="93.3984" style="stroke:#000000;stroke-width:2.0;" width="347" x="29" y="68.5938"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="60" x="44" y="81.6606">Funding</text><line style="stroke:#A80036;stroke-width:1.0;" x1="117" x2="159" y1="111.8594" y2="111.8594"/><line style="stroke:#A80036;stroke-width:1.0;" x1="159" x2="159" y1="111.8594" y2="124.8594"/><line style="stroke:#A80036;stroke-width:1.0;" x1="118" x2="159" y1="124.8594" y2="124.8594"/><polygon fill="#A80036" points="128,120.8594,118,124.8594,128,128.8594,124,124.8594" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="90" x="124" y="106.7935">Open Channel</text><polygon fill="#A80036" points="259,149.9922,269,153.9922,259,157.9922,263,153.9922" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="117" x2="265" y1="153.9922" y2="153.9922"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="94" x="124" y="148.9263">Start Watching</text><path d="M77,174.9922 L208,174.9922 L208,181.9922 L198,191.9922 L77,191.9922 L77,174.9922 " fill="#EEEEEE" style="stroke:#000000;stroke-width:1.0;"/><rect fill="none" height="128.5313" style="stroke:#000000;stroke-width:2.0;" width="240" x="77" y="174.9922"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="86" x="92" y="188.0591">Transacting</text><line style="stroke:#A80036;stroke-width:1.0;" x1="117" x2="159" y1="218.2578" y2="218.2578"/><line style="stroke:#A80036;stroke-width:1.0;" x1="159" x2="159" y1="218.2578" y2="231.2578"/><line style="stroke:#A80036;stroke-width:1.0;" x1="118" x2="159" y1="231.2578" y2="231.2578"/><polygon fill="#A80036" points="128,227.2578,118,231.2578,128,235.2578,124,231.2578" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="144" x="124" y="213.1919">Off-chain transactions.</text><path d="M96,243.2578 L166,243.2578 L166,250.2578 L156,260.2578 L96,260.2578 L96,243.2578 " fill="#EEEEEE" style="stroke:#000000;stroke-width:1.0;"/><rect fill="none" height="51.2656" style="stroke:#000000;stroke-width:2.0;" width="196" x="96" y="243.2578"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="25" x="111" y="256.3247">opt</text><text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="85" x="181" y="255.4683">[Periodically]</text><polygon fill="#A80036" points="259,282.5234,269,286.5234,259,290.5234,263,286.5234" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="117" x2="265" y1="286.5234" y2="286.5234"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="135" x="124" y="281.4575">State with signatures</text><path d="M8,316.5234 L110,316.5234 L110,323.5234 L100,333.5234 L8,333.5234 L8,316.5234 " fill="#EEEEEE" style="stroke:#000000;stroke-width:1.0;"/><rect fill="none" height="224.9297" style="stroke:#000000;stroke-width:2.0;" width="472" x="8" y="316.5234"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="57" x="23" y="329.5903">Dispute</text><line style="stroke:#A80036;stroke-width:1.0;" x1="281" x2="323" y1="359.7891" y2="359.7891"/><line style="stroke:#A80036;stroke-width:1.0;" x1="323" x2="323" y1="359.7891" y2="372.7891"/><line style="stroke:#A80036;stroke-width:1.0;" x1="282" x2="323" y1="372.7891" y2="372.7891"/><polygon fill="#A80036" points="292,368.7891,282,372.7891,292,376.7891,288,372.7891" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="169" x="288" y="354.7231">Received Registered Event</text><path d="M27,384.7891 L97,384.7891 L97,391.7891 L87,401.7891 L27,401.7891 L27,384.7891 " fill="#EEEEEE" style="stroke:#000000;stroke-width:1.0;"/><rect fill="none" height="147.6641" style="stroke:#000000;stroke-width:2.0;" width="349" x="27" y="384.7891"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="25" x="42" y="397.856">opt</text><text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="137" x="112" y="396.9995">[if state is not latest]</text><line style="stroke:#A80036;stroke-width:1.0;" x1="281" x2="323" y1="428.0547" y2="428.0547"/><line style="stroke:#A80036;stroke-width:1.0;" x1="323" x2="323" y1="428.0547" y2="441.0547"/><line style="stroke:#A80036;stroke-width:1.0;" x1="282" x2="323" y1="441.0547" y2="441.0547"/><polygon fill="#A80036" points="292,437.0547,282,441.0547,292,445.0547,288,441.0547" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="41" x="288" y="422.9888">Refute</text><polygon fill="#A80036" points="128,466.1875,118,470.1875,128,474.1875,124,470.1875" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="122" x2="270" y1="470.1875" y2="470.1875"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="49" x="134" y="465.1216">Refuted</text><path d="M41.5,483.1875 L41.5,523.1875 L346.5,523.1875 L346.5,493.1875 L336.5,483.1875 L41.5,483.1875 " fill="#D3D3D3" filter="url(#fx0iiako6qm09)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M336.5,483.1875 L336.5,493.1875 L346.5,493.1875 L336.5,483.1875 " fill="#D3D3D3" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="210" x="72" y="500.2544">If watcher has registered a state,</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="231" x="72" y="515.3872">alice can then initiate channel close.</text><path d="M96,554.4531 L181,554.4531 L181,561.4531 L171,571.4531 L96,571.4531 L96,554.4531 " fill="#EEEEEE" style="stroke:#000000;stroke-width:1.0;"/><rect fill="none" height="93.3984" style="stroke:#000000;stroke-width:2.0;" width="280" x="96" y="554.4531"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="40" x="111" y="567.52">Close</text><polygon fill="#A80036" points="259,593.7188,269,597.7188,259,601.7188,263,597.7188" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="117" x2="265" y1="597.7188" y2="597.7188"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="90" x="124" y="592.6528">Stop watching</text><line style="stroke:#A80036;stroke-width:1.0;" x1="117" x2="159" y1="626.8516" y2="626.8516"/><line style="stroke:#A80036;stroke-width:1.0;" x1="159" x2="159" y1="626.8516" y2="639.8516"/><line style="stroke:#A80036;stroke-width:1.0;" x1="118" x2="159" y1="639.8516" y2="639.8516"/><polygon fill="#A80036" points="128,635.8516,118,639.8516,128,643.8516,124,639.8516" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="89" x="124" y="621.7856">Close channel</text><!--MD5=[bd08bd46c07ae19b4a735e9a1549773c]
+@startuml watcher
+!pragma teoz true
+hide footbox
+
+participant "Main component" as main_component
+participant "Watching Component\nRemote orLocal" as watcher
+
+group Funding
+
+activate main_component
+main_component -> main_component: Open Channel
+
+main_component -> watcher: Start Watching
+activate watcher
+
+end
+
+group Transacting 
+
+main_component <-> main_component: Off-chain transactions.
+
+opt Periodically
+main_component -> watcher: State with signatures
+end
+
+end
+
+group Dispute
+
+watcher -> watcher: Received Registered Event
+
+opt if state is not latest
+watcher -> watcher: Refute
+watcher -> main_component: Refuted
+note over main_component, watcher #LightGray
+If watcher has registered a state,
+alice can then initiate channel close.
+endnote
+end
+
+end
+
+
+group Close 
+main_component -> watcher: Stop watching
+deactivate watcher
+main_component -> main_component: Close channel
+
+end
+
+
+
+@enduml
+
+PlantUML version 1.2020.21(Mon Nov 30 22:10:11 IST 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: IN
+--></g></svg>
