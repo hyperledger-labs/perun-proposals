@@ -3,7 +3,7 @@
 # Proposal: IoT Adoption
 
 * Author(s): Daniel Kunz<!-- Author, Co-Author -->
-* Status: propose
+* Status: accept
 * Related issue: <!-- org-name/project#NNN, org-name/project#NNN. -->
 
 <!-- Use the above format for issues on github and full links for issues on other platforms. -->
