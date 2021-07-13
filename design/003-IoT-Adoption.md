@@ -20,7 +20,7 @@ By separating the setup of the channels from the transaction over the channels b
 
 ## Details
 
-Separating the functionality to reduce the needed available implementation and communication on a device. As shown in Figure 2, the following main components should be available as independent components:
+Separating the functionality to allow for a more light-weight implementation  and to reduce the communication involving the IoT device. As shown in Figure 2, the current perun-node is to be split into the following independent main components:
 
 * Funding Component: This component will act in the open, register and settle phase of a state channel. It funds the channel during open phase with the agreed initial balance. Additionally, it will close a channel with the given balance and is able to withdraw funds at the end.
 * Watching Component: This component receives   through an API states for already established channels and monitors the smart contracts, that other participating entity in the channel is not publishing an older state. Otherwise, the Watching Component will publish the latest known one. Newer retrieved valid states are overriding older ones. Its functionality is mapped to the transact phase of a state channel, where every party is able to publish a current state to be settled. In addition, it can be informed to stop watching a given channel.
