@@ -1,51 +1,50 @@
+.. SPDX-FileCopyrightText: 2021 Hyperledger
+   SPDX-License-Identifier: CC-BY-4.0
+
 @startuml watcher
 !pragma teoz true
 hide footbox
 
 participant "Main component" as main_component
-participant "Watching Component\nRemote orLocal" as watcher
+participant "Watching Component\nRemote or Local" as watcher
 
-group Funding
-
+group Open phase
 activate main_component
 main_component -> main_component: Open Channel
-
 main_component -> watcher: Start Watching
 activate watcher
-
 end
 
-group Transacting 
-
-main_component <-> main_component: Off-chain transactions.
-
+group Transact phase 
+main_component <-> main_component: Off-chain transactions
 opt Periodically
-main_component -> watcher: State with signatures
+main_component -> watcher: Updated off-chain state
+watcher -> watcher: Store the new state\nand discard older one
+end
 end
 
+group Register phase
+loop until the stop watching command it received
+watcher -> watcher: State registered\non the blockchain
+main_component <- watcher: State registered\non the blockchain
+opt if registered state is not latest
+watcher -> watcher: Register latest\noff-chain state
+note over watcher #LightGray
+Once this succeeds, watcher will receieve another 
+"State registered on the blockchain" notification
+end note
+end
+opt if main component has not sent\nthe latest state to the watcher
+main_component -> watcher: Latest off-chain state
+end
+end
 end
 
-group Dispute
 
-watcher -> watcher: Received Registered Event
-
-opt if state is not latest
-watcher -> watcher: Refute
-watcher -> main_component: Refuted
-note over main_component, watcher #LightGray
-If watcher has registered a state,
-alice can then initiate channel close.
-endnote
-end
-
-end
-
-
-group Close 
+group Settle phase 
 main_component -> watcher: Stop watching
 deactivate watcher
-main_component -> main_component: Close channel
-
+main_component -> main_component: Settle channel
 end
 
 

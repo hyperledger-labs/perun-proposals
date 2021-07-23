@@ -4,7 +4,7 @@
 
 * Author(s): Manoranjith
 * Status: accepted
-* Related issue: [perun-proposals#008](https://github.com/hyperledger-labs/perun-proposals/pull/008),
+* Related issue: [perun-proposals#008](https://github.com/hyperledger-labs/perun-proposals/pull/008)
 
 
 <!-- Use the above format for issues on github and full links for issues on other platforms. -->
@@ -15,7 +15,7 @@
 The high level requirements for adopting the perun-framework for IoT use cases
 was described in [perun-proposal#003](./003-IoT-Adoption.md). Detailed
 description of the functionality and design for implementing the watching
-component is proposed.
+component is presented in this proposal.
 
 
 ## Motivation
@@ -28,113 +28,172 @@ channel.
 
 However, it is desirable to run the watcher as a separate component for IoT use
 cases. Because, for the perun protocol to work, the watcher should be actively
-watching the blockchain for any states being registered and if an older state is
-registered, the watcher must immediately refute with the latest valid state.
-Given the connectivity and power constraints of IoT devices, it might not be
-possible to meet these requirements if watching service is running on the IoT
-device.
+watching the blockchain for any states being registered and; if the registered
+state was not the latet off-chain state, the watcher must immediately register
+the latest off-chain state.  Given the connectivity and power constraints of
+IoT devices, it might not be possible to meet these requirements if watching
+service is running on the IoT device.
 
-Since the current design cannot be extended to implement a watcher that can run
-as a remote service, a new design is proposed where, the watcher can run:
-1. In the same instance as the go-perun client (ideal for capable hardware).
-2. In a separate instance as a remote service (ideal for constrained hardware).
+The current design cannot be extended to implement a watcher that can run
+as a remote service. Hence, a new design is proposed where, the watcher can be run:
+1. As a part of go-perun client itself (ideal for capable hardware).
+2. As an independant component on the same or different computer (ideal for
+   constrained hardware).
 
 ## Details
 
 <!-- Provide a detailed description of the proposal. -->
 
-This section describes the proposed design for watching component and the
-implementation hints are described in the last section of this proposal.
+### Functionalities of the watcher
 
-In the proposed design, the watcher is started once per client instance, as
-opposed to one watcher per channel in the current design. Interfaces for
-initializing the watcher, using it and shutting it down are described below.
+1. User should be able to initialize the watcher without associating it to any
+   particular channel. After initialization, it must have access to a wallet
+   containing keys for an on-chain account with sufficient funds (to pay
+   transaction fees when registering off-chain states).
 
-### Initializing the watcher
+2. Main component should be able to register/deregister channel IDs to
+   start/stop watching for on-chain events.
 
-Watcher should be initialized with a connection to blockchain that is capable of
-1. Subscribing to on-chain register events for a given channel.
-2. Send Register transactions on the blockchain.
+3. After a channel is registered,
 
-These two functionalities can be provided by using a subset of the current
-`channel.Adjudicator` interface comprising of only two methods: `Register` and
-`Subscriber`. This interface could be called `RegistererSubscriber` (or even by
-a different name).
+   1. Main component should be able to periodically send the newer off-chain
+      states.
 
-Using the new interface, the signature of the method for initialization would
-be,
+   2. Main component should be notified by the watcher, when a state is
+      registered or progressed on the blockchain.
 
+4. If the state registered on the blockchain and is not the latest off-chain
+   state known to the watcher, then it must register the latest state on the
+   blockchain.
+
+### Interfaces of the watcher
+
+In order to realize the desired functionalities, watcher should provide the
+following interfaces:
+
+
+```go
+type Watcher struct{}
+
+// For initalizing the watcher.
+func NewWatcher(rs RegisterSubscriber) *Watcher {...}
+
+// For interacting with the blockchain.
+type RegisterSubscriber interface {
+    Subscriber
+    Registerer
+}
+
+// For registering off-chain state for a given ledger channel,
+// along with the off-chain states of its sub-channels and virtual channels.
+type Registerer interface {
+    Register(State, SubStates)
+}
+
+// For receiving registered and progressed events for a given channel ID.
+type Subscribe interface {
+    Subscribe(ChannelID)
+}
+
+// For registering/de-registering a channel ID with/from the watcher.
+func (w *Watcher) Register(ChannelID, OffChainStatesSub, OnChainEventsPub) {...}
+func (w *Watcher) Deregister(ChannelID) {...}
+
+// For receiving off-chain states from the main component.
+type OffChainStatesSub interface {
+	Next() OffChainState
+}
+
+// For sending on-chain events to the main component.
+type OnChainEventsPub inteface {
+    // OnChainEvent can be a registered event or a progressed event.
+    Publish(OnChainEvent)
+}
+
+// Interfaces for the main component to interact with the watcher.
+
+// For receiving on-chain events from the watcher.
+type OnChainEventsSub interface {
+	Next() OnChainEvent
+}
+
+// For sending off-chain states to the watcher.
+type OffChainStatesPub inteface {
+	Publish(OffChainState)
+}
+
+// For shutting down the watcher
+func (w *Watcher) Shutdown()
 ```
-watcher, err := NewWatcher(rs RegisterSubscriber)
-```
 
-This watching service can run either locally or as remote instance. The returned
-watcher instance can be used to interact with the watcher.
+The pub-sub instances for off-chain states and on-chain events are initialized
+by the main component and passed on to the watcher. Because,
 
-### Using the watcher
+1. Initial implementation can be a one channel to one watcher pub-sub.
 
-New channel IDs can be registered with/de-registered from the watcher using the
-method calls on the watcher instance. To send updated off-chain states and
-receive registered events (optional, when watcher has noticed an older state
-being registered on the blockchain and refutes with the latest state), two
-pub-sub interfaces are defined.
+2. Later, if one channel wants to use multiple watcher instances (because one
+ watcher could not provide expected level of availability), then the one
+ channel to multiple watcher pub-sub can also be implemented.
 
-1. `OffChainStatesPubSub`: Channel instance will publish updated off-chain
-   states to this and watching component will read from it using a subscription.
-
-2. `RegisterTxPubSub`: Watching component will publish the details of `register`
-   transaction to this and the channel instance will read from it using a
-   subscription.
-
-Each of these pub-sub should provide `Publish` method on the `Publisher` and
-`Next` method on the `Subscription`.
-
-Using these two interfaces, the method for registering a channel ID with the
-watcher will be:
-
-```
-err := watcher.Register(channelID, offChainStatesSub, registerTxPub)
-
-```
-
-The `offChainStatesSub` and `registerTxPub` are initialized by the channel
-instance and passed on to the watching component. Because doing it this way,
-
-- Initial implementation can be a one channel to one watcher pub-sub.
-- Later if the same channel wants to use multiple watcher instances (because one
-  watcher could not provide expected level of availability), then the one
-  channel to multiple watcher pub-sub could also be implemented.
-
-To stop the watcher from monitoring events for a given channel ID, a
-`de-register` method should be defined. Interface of this method will be
-
-```
-err := watcher.Deregister(channelID)
-```
-
-When a channel is de-registered, the watcher should ignore any event received
-for the channel ID.
-
-### Shutting down the watcher
-
-The watcher instance should also provide a method to shut it down. The signature
-of this method will be
-
-```
-channelIDs := watcher.Shutdown()
-```
-
-On receiving the signal to shut itself down, the watcher should
+On shutdown call, the watcher must,
 1. Stop watching for all the channel IDs registered with it.
 2. Complete any on-going refutation process.
-3. Return with all the channel IDs that were registered with it.
+3. Close the `OffChainSub` and `OnChainEventsPub` on each of the channels
+  registered with it. This ensures that the channels are notified of the
+  watcher shutdown.
+4. Finally, it should stop.
 
-The interaction between the watcher and the main component is described in the
-sequence diagram:
+### Interaction between the watcher and the main component
+
+Interaction between the watcher and main component based using the above
+interfaces is shown in the diagram below.
 
 ![Interaction between the main component and watcher](004/watcher.svg)
 
 Figure 1: Interaction between the main component and watcher.
+
+### How different types of channels should be handled by watcher
+
+#### When main component registers a channel with the watcher
+
+1. For ledger channel: only its channel ID and latest off-chain state at the
+   time of registering is sufficient.
+
+   After registering a ledger channel, it is the main component's responsibility
+   to individually register all its sub-channels and virtual channels.
+
+2. For sub-channel: sub-channel ID, parent ledger channel ID and, the latest
+   off-chain states of both the sub-channel and parent ledger channel are
+   required.
+
+3. For virtual channel: virtual channel ID, relevant parent channel ID and, the
+   latest off-chain states of both the virtual channel and the relevent parent
+   ledger channel are required.
+
+   Relevant parent ledger channel is the ledger channel between this user and
+   the common intermediary.
+
+#### When main component sends new off-chain states for the watcher
+
+For all types of channels, watcher will have to store the newer state and
+discard the older ones.
+
+#### When registering states on the blockchain
+
+1. For ledger channel: the latest off-chain states of the ledger channel and,
+   of its sub-channels, virtual channels must be registered.
+
+2. In case sub-channel; the latest off-chain state of the parent ledger
+   channel, of the sub-channel and, of all the other sub-channels, virtual
+   channels funded by the parent ledger channel must be registered.
+
+2. In case virtual channel; the latest off-chain state of the relevant parent
+   ledger channel, of the sub-channel and, of all the other sub-channels,
+   virtual channels funded by the relevant parent ledger channel must be
+   registered.
+
+   Relevant parent ledger channel is the ledger channel between this user and
+   the common intermediary.
 
 ## Rationale
 
@@ -166,21 +225,24 @@ Architecture (Requires a modification of the architecture)
 The implementation hints are described assuming the language to be `go`.
 However, these could also be extended to other languages as well.
 
-An important point to note is that, `off-chain states` should be sent to the
-watcher along with the corresponding signatures. Currently, `go-perun` does not
-have a method for retrieving this, So a new method should be added for the same.
+1. The `Register` and `Subscribe` methods are already part of `Adjudicator`
+   interface. Hence, the adjudicator implementatations can be used as
+   `RegisterSubsriber`.
 
-To implement a watching component that works locally,
+2. The `State` method on a channel returns the off-chain state without the
+   signatures. So, add a new method to retrieve the latest off-chain state along
+   with signatures.
 
-1. The watching component can be run as a `go-routine`, started by invoking the
-`NewWatcher` function and,
-2. The pub-sub interfaces can be implemented using `go-channels`.
+3. To implement a watching component that works locally,
 
-To implement a watching component that runs as a remote service,
+    1. The watcher component can be initialized to run as a go-routine.
+    2. The pub-sub interfaces can be implemented using `go-channels`.
 
-1. The watching component can be started to run as an independent program.
-2. The main program could connect to the watcher by invoking the `NewWatcher`
-   function with the `URL` to connect with the watching component started
-   earlier.
-3. The connection to the remote watching component and pub-sub interface can be
-   implemented remote protocols like `grpc` or `MQTT`.
+4. To implement a watching component that runs as a remote service,
+
+    1. The watching component can be initialized to run as an independent
+       program.
+    2. The main program can connect with the watching component via remote
+       interface.
+    3. The pub-sub can be implemented using protocols such as `grpc`, `MQTT`,
+       `webhooks` or web sockets`.
