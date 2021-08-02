@@ -29,7 +29,7 @@ channel.
 However, it is desirable to run the watcher as a separate component for IoT use
 cases. Because, for the perun protocol to work, the watcher should be actively
 watching the blockchain for any states being registered and; if the registered
-state was not the latet off-chain state, the watcher must immediately register
+state was not the latest off-chain state, the watcher must immediately register
 the latest off-chain state.  Given the connectivity and power constraints of
 IoT devices, it might not be possible to meet these requirements if watching
 service is running on the IoT device.
@@ -37,7 +37,7 @@ service is running on the IoT device.
 The current design cannot be extended to implement a watcher that can run
 as a remote service. Hence, a new design is proposed where, the watcher can be run:
 1. As a part of go-perun client itself (ideal for capable hardware).
-2. As an independant component on the same or different computer (ideal for
+2. As an independent component on the same or different computer (ideal for
    constrained hardware).
 
 ## Details
@@ -91,7 +91,7 @@ type Registerer interface {
 }
 
 // For receiving registered and progressed events for a given channel ID.
-type Subscribe interface {
+type Subscriber interface {
     Subscribe(ChannelID)
 }
 
@@ -167,7 +167,7 @@ Figure 1: Interaction between the main component and watcher.
    required.
 
 3. For virtual channel: virtual channel ID, relevant parent channel ID and, the
-   latest off-chain states of both the virtual channel and the relevent parent
+   latest off-chain states of both the virtual channel and the relevant parent
    ledger channel are required.
 
    Relevant parent ledger channel is the ledger channel between this user and
@@ -226,7 +226,7 @@ The implementation hints are described assuming the language to be `go`.
 However, these could also be extended to other languages as well.
 
 1. The `Register` and `Subscribe` methods are already part of `Adjudicator`
-   interface. Hence, the adjudicator implementatations can be used as
+   interface. Hence, the adjudicator implementations can be used as
    `RegisterSubsriber`.
 
 2. The `State` method on a channel returns the off-chain state without the
