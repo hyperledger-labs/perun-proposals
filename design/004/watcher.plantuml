@@ -7,12 +7,15 @@ hide footbox
 
 participant "Main component" as main_component
 participant "Watching Component\nRemote or Local" as watcher
+participant "Blockchain" as blockchain
 
 group Open phase
 activate main_component
 main_component -> main_component: Open Channel
 main_component -> watcher: Start Watching
+watcher -> blockchain: Subscribe to events\nfor this channel ID
 activate watcher
+activate blockchain
 end
 
 group Transact phase 
@@ -24,15 +27,19 @@ end
 end
 
 group Register phase
-watcher -> watcher: State registered\non the blockchain
-main_component <- watcher: State registered\non the blockchain
 loop until the stop watching command it received
-watcher -> watcher: State registered\non the blockchain
+blockchain -> blockchain: State registered by\nany participant
+watcher <- blockchain: State registered\non the blockchain
 main_component <- watcher: State registered\non the blockchain
+note over main_component, watcher #LightGray
+This update is sent to inform the main component
+that state has been registered and refutation will
+be automatically done by the watcher, if required.
+end note
 opt if registered state is not latest
-watcher -> watcher: Register latest\noff-chain state
+watcher -> blockchain: Register latest\noff-chain state
 note over watcher #LightGray
-Once this succeeds, watcher will receieve another 
+Once this succeeds, watcher will receive another
 "State registered on the blockchain" notification
 end note
 end
@@ -45,6 +52,8 @@ end
 
 group Settle phase 
 main_component -> watcher: Stop watching
+watcher -> blockchain: Unsubscribe from events\nfor this channel ID
+deactivate blockchain
 deactivate watcher
 main_component -> main_component: Settle channel
 end
