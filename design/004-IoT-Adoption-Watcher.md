@@ -333,6 +333,62 @@ discard the older ones.
    Relevant parent ledger channel is the ledger channel between this user and
    the common intermediary.
 
+### Sample Usage
+
+The main component can either initialize a local watcher or connect to a remote
+watcher.
+
+#### Using the watcher from the main component
+
+```go
+// For initializing a local watcher
+w, err := Watcher(rs RegistererSubscriber)
+
+// For connecting to the remote watcher
+w, err := ConnectToWatcherGrpc(cfg Config)
+
+// After establishing a channel (say "ch1"),
+// 1. Setup the subscription,
+// 2. Instruct the watcher to start watching for events on that channel and,
+// 3. Publish the initial state.
+statesPub, statesSub := newStatesPubSub()
+adjudicatorEventsPub, adjudicatorEventsSub := newAdjudicatorEventsPubSub()
+
+err := w.StartWatching(ch1.ID(), statesSub, adjudicatorEventsPub)
+
+statesPub.Publish(ch.StateWithSignatures())
+
+// Start a handler for adjudicator events.
+go func() {
+    adjEvent := adjudicatorEventsSub.Next()
+    if adjEvent == nil {
+        err := adjudicatorEventsSub.Err()
+        // handleError and probably return.
+    } else {
+        // handleEvent
+    }
+}
+
+// When new off-chain states are created, publish them.
+statesPub.Publish(ch.StateWithSignatures())
+
+// Instruct the watcher to stop watching for events.
+err := w.StopWatching(ch1.ID())
+```
+
+#### Gracefully shutting down the watcher
+
+When the watching service is to be terminated gracefully, the `Shutdown` method
+is used. Any on-going refutations are completed and all the open subscriptions
+are closed before terminating.
+
+This is especially useful when using watcher as remote service.
+
+```go
+err := w.Shutdown()
+// Log the error.
+```
+
 ## Rationale
 
 <!-- Provide a discussion of alternative approaches and trade offs; advantages
