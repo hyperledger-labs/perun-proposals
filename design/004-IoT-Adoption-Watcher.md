@@ -319,7 +319,7 @@ discard the older ones.
    Relevant parent ledger channel is the ledger channel between this user and
    the common intermediary.
 
-### Sample Usage
+### Illustrative usage of watcher API
 
 The main component can either initialize a local watcher or connect to a remote
 watcher.
