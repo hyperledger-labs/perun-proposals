@@ -149,10 +149,10 @@ is already implemented in go-perun.
 
 Watcher must be initialized before connecting to it. When using a
 
-1. Local watcher, the watcher instance initialized in the previous step can be
+1. Local watcher: the watcher instance initialized in the previous step can be
    directly used.
 
-2. Remote watcher, a connection must be established with the remote watcher
+2. Remote watcher: a connection must be established with the remote watcher
    instance before using it.
 
 ```go
@@ -167,8 +167,8 @@ func ConnectToWatcherGrpc(cfg Config) (Watcher, error) {...}
 // StartWatching starts watching for adjudicator events for given a channel.
 //
 // Watcher will receive the newer off-chain states from the main component via
-// the StatesSub. It will notify the main component of the adjudicator events
-// via the AdjudicatorEventsPub.
+// the StatesSub and notify the main component of the adjudicator events via
+// the AdjudicatorEventsPub.
 func (w *Watcher) StartWatching(ChannelID, StatesSub, AdjudicatorEventsPub) error {...}
 
 // To stop watching for adjudicator events for given a channel.
@@ -177,8 +177,14 @@ func (w *Watcher) StopWatching(ChannelID) error {...}
 
 #### For sending off-chain states from the main component to watcher
 
+In go-perun,
 [`State`](https://github.com/hyperledger-labs/go-perun/blob/44cbda6af209edee2413102a91dec2289b0a569e/channel/state.go#L31)
-is already implemented in go-perun.
+type is already defined. However, this does include the signatures of
+participants on the state. Hence, a new type (say `StateWithSignatures`) should
+be defined that include a `State` and signatures of all participants on the
+state.
+
+In further description, `State` always refers to `StateWithSignatures`.
 
 ```go
 // StatesPubSub is used for sending newer off-chain states from the main
@@ -269,26 +275,6 @@ type AdjudicatorEventsSub interface {
 	Close() error
 }
 ```
-
-#### Note on pub-sub interfaces between the main component and the watcher
-
-The main component initializes and passes the subscriber instance for off-chain
-states and the publisher instance for on-chain events to the watcher. Because,
-
-1. Initial implementation can be a one channel to one watcher pub-sub.
-
-2. Later, if one channel wants to use multiple watcher instances (because one
-   watcher could not provide expected level of availability), it can be
-   achieved by extending the pub-sub implementation while retaining the same
-   interfaces. For this, the main component could
-   
-   1. Initialize a one to many pub-sub for off-chain states and pass a new
-      instances of subscriber to each watcher instance. Main component can send
-      newer off-chain states on the single publisher instance.
-      
-   2. Initialize a many to one pub-sub for on-chain events and pass a new
-      instance of publisher to each watcher instance. Main component can
-      receive all the on-chain events on the single subscriber instance.
 
 ### How different types of channels should be handled by watcher
 
@@ -397,15 +383,26 @@ err := w.Shutdown()
 <!-- Provide a discussion of alternative approaches and trade offs; advantages
 and disadvantages of the specified approach.  -->
 
-The proposed design
+### For initializing the pub-sub interfaces in that main component
+The main component initializes and passes the subscriber instance for off-chain
+states and the publisher instance for on-chain events to the watcher. Because,
+by doing this way
 
-- Ensures watching component can be run either locally or as a remote service
-  and be connected to the blockchain in either case.
+1. Initial implementation can be a one channel to one watcher pub-sub.
 
-- Ensures a channel instance can register with one or more watching components.
-  This is achieved by keeping the control of initializing all the pub-sub
-  components with the channel instance.
+2. Later, if one channel wants to use multiple watcher instances (because one
+   watcher could not provide expected level of availability), it can be
+   achieved by extending the pub-sub implementation while retaining the same
+   interfaces. For this, the main component could
 
+   1. Initialize a one to many pub-sub for off-chain states and pass a new
+      instances of subscriber to each watcher instance. Main component can send
+      newer off-chain states on the single publisher instance.
+
+   2. Initialize a many to one pub-sub for on-chain events and pass a new
+      instance of publisher to each watcher instance. Main component can
+      receive all the on-chain events on the single subscriber instance.
+      
 ## Impact
 
 <!-- Choose the level of impact this proposal will have: -->
@@ -425,12 +422,12 @@ the remote interface, the watcher should work with any new perun client
 implementations that will be added in the future.
 
 1. The `Register` and `Subscribe` methods are already part of `Adjudicator`
-   interface. the adjudicator implementations can be used as
+   interface. the existing adjudicator implementations can be used as
    `RegisterSubscriber`.
 
 2. The `State` method on a channel returns the off-chain state without the
-   signatures. So, add a new method to retrieve the latest off-chain state along
-   with signatures.
+   signatures. So, add a new method (say `StateWithSignatures` to retrieve the
+   latest off-chain state along with signatures.
 
 3. To implement a watching component that works locally,
 
