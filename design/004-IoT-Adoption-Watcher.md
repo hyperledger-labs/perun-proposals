@@ -79,45 +79,40 @@ Figure 1: Interaction between the main component and watcher.
 
 This section presents a description of the interfaces of the watcher. These
 interfaces are designed based on the interaction between the watcher and the
-main component in the previous section.
+main component presented in the previous section.
 
-#### For initializing the watcher
+#### For initializing and shutting down the watcher
 
 ```go
-
-// Watcher represents watching component.
+// Watcher represents the watching component.
 type Watcher struct {...}
 
 // NewWatcher instantiates the watcher.
 //
-// Watcher will use the RegistererSubscriber instance for subscribing to
-// adjudicator events from the blockchain and for registering off-chain
-// states on the blockchain.
-func NewWatcher(rs RegisterSubscriber) (*Watcher, error) {...}
+// The RegistererSubscriber instance will be used by the watcher for
+// interacting with the blockchain.
+func NewWatcher(rs RegistererSubscriber) (*Watcher, error) {...}
 
-// StartWatching starts watching for adjudicator events for given a channel.
-//
-// Watcher will receive the newer off-chain states from the main component via
-// the StatesSub. It will notify the main component of the adjudicator events
-// via the AdjudicatorEventsPub.
-func (w *Watcher) StartWatching(ChannelID, StatesSub, AdjudicatorEventsPub) error {...}
+// BindToGrpcServer binds the API of Watcher to a gRPC server and makes it
+// accessible via gRPC protocol.
+func BindToGrpcServer(w *Watcher) (error) {...}
 
-// To stop watching for adjudicator events for given a channel.
-func (w *Watcher) StopWatching(ChannelID) error {...}
-
-// For shutting down the watcher
-func (w *Watcher) Shutdown() error
+// Shutdown completes any on-going refutation processes,
+// closes all the subscriptions and terminates the watcher gracefully.
+func (w *Watcher) Shutdown() error {...}
 ```
 
-On shutdown call, the watcher must,
+The shutdown call is used to terminate the watcher instance and notify all the
+main component of the same. On shutdown call, the watcher must,
 1. Stop watching for all the channel IDs it has been watching.
 2. Complete any on-going refutation process.
 3. Close the `OffChainSub` and `OnChainEventsPub` on each of the channels. This
    ensures that the channels are notified of the watcher shutdown.
 4. Finally, it should stop.
 
-#### For interaction between the watcher and the blockchain.
 
+RegistererSubscriber interface used by the watcher for interacting with the
+blockchain.
 
 ```go
 // RegistererSubscriber is composed of Registerer and Subscriber interfaces.
@@ -150,7 +145,37 @@ type Subscriber interface {
 [`AdjudicatorEventSub`](https://github.com/hyperledger-labs/go-perun/blob/44cbda6af209edee2413102a91dec2289b0a569e/channel/adjudicator.go#L105)
 is already implemented in go-perun.
 
-#### For sending off-chain states from the main component to watcher.
+#### For connecting to the watcher and start/stop watching for channels
+
+Watcher must be initialized before connecting to it. When using a
+
+1. Local watcher, the watcher instance initialized in the previous step can be
+   directly used.
+
+2. Remote watcher, a connection must be established with the remote watcher
+   instance before using it.
+
+```go
+
+// ConnectToWatcherGrpc establishes a connection with a remote watcher via
+// gRPC protocol.
+//
+// It returns a watcher instance that implements client stubs for interacting
+// with the remote watcher.
+func ConnectToWatcherGrpc(cfg Config) (Watcher, error) {...}
+
+// StartWatching starts watching for adjudicator events for given a channel.
+//
+// Watcher will receive the newer off-chain states from the main component via
+// the StatesSub. It will notify the main component of the adjudicator events
+// via the AdjudicatorEventsPub.
+func (w *Watcher) StartWatching(ChannelID, StatesSub, AdjudicatorEventsPub) error {...}
+
+// To stop watching for adjudicator events for given a channel.
+func (w *Watcher) StopWatching(ChannelID) error {...}
+```
+
+#### For sending off-chain states from the main component to watcher
 
 [`State`](https://github.com/hyperledger-labs/go-perun/blob/44cbda6af209edee2413102a91dec2289b0a569e/channel/state.go#L31)
 is already implemented in go-perun.
@@ -168,7 +193,7 @@ type StatesPubSub interface {
 type StatesPub interface {
     // Publish publishes the given state to all the subscribers.
     // Returns an error if the subscription was closed.
-	Publish(State) error
+    Publish(State) error
     
     // Close closes the publisher instance and all the subscriptions associated
     // with it. Any call to Publish should immediately return error.
@@ -178,22 +203,22 @@ type StatesPub interface {
 // StatesSub is used by the watcher to receive newer off-chain states that
 // are sent by the main component.
 type StatesSub interface {
-	// Next returns the most recently published state in the subscription.
+    // Next returns the most recently published state in the subscription.
     // Returns nil if the subscription is closed or any other error occurs.
-	Next() State
+    Next() State
     
-	// Err returns the error status of the subscription. After Next returns nil,
-	// Err should be checked for an error.
+    // Err returns the error status of the subscription. After Next returns nil,
+    // Err should be checked for an error.
     Err() error
     
     // Close closes the subscription. After subscription closes, any call to
     // Next should immediately return nil and any call to Err should return
     // an error.
-	Close() error
+    Close() error
 }
 ```
 
-#### For notifying the main component of registered and progressed events.
+#### For notifying the main component of registered and progressed events
 
 [`AdjudicatorEvent`](https://github.com/hyperledger-labs/go-perun/blob/44cbda6af209edee2413102a91dec2289b0a569e/channel/adjudicator.go#L122) and [`AdjudicatorEventsSub`](https://github.com/hyperledger-labs/go-perun/blob/44cbda6af209edee2413102a91dec2289b0a569e/channel/adjudicator.go#L105)
 are already defined and implemented in go-perun. These are used by the watcher
@@ -215,7 +240,7 @@ type AdjudicatorEventsPubSub interface {
 
 // AdjudicatorEventsPub is used by the watcher to send notifications of
 // adjudicator events to the main component.
-type AdjudicatorEventsPub inteface {
+type AdjudicatorEventsPub interface {
     // Publish publishes the given AdjudicatorEvent to all the subscribers.
     // Returns an error if the subscription was closed.
 	Publish(AdjudicatorEvent) error

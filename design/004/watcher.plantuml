@@ -9,6 +9,16 @@ participant "Main component" as main_component
 participant "Watching Component\nRemote or Local" as watcher
 participant "Blockchain" as blockchain
 
+group Initialize Watcher
+watcher -> watcher: Initialize watcher
+
+opt if remote watcher
+watcher -> watcher: Initialize remote API server
+end
+
+
+end
+
 group Open phase
 activate main_component
 main_component -> main_component: Open Channel
