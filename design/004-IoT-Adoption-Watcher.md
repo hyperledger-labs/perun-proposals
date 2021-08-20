@@ -341,10 +341,10 @@ watcher.
 #### Using the watcher from the main component
 
 ```go
-// For initializing a local watcher
-w, err := Watcher(rs RegistererSubscriber)
+// Either initialize a local watcher
+w, err := NewWatcher(rs RegistererSubscriber)
 
-// For connecting to the remote watcher
+// Or connect to the remote watcher
 w, err := ConnectToWatcherGrpc(cfg Config)
 
 // After establishing a channel (say "ch1"),
@@ -372,8 +372,11 @@ go func() {
 // When new off-chain states are created, publish them.
 statesPub.Publish(ch.StateWithSignatures())
 
-// Instruct the watcher to stop watching for events.
+// Instruct the watcher to stop watching for events before settling.
 err := w.StopWatching(ch1.ID())
+
+// Settle the channel.
+err := ch1.Settle()
 ```
 
 #### Gracefully shutting down the watcher
