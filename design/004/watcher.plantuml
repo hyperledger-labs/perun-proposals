@@ -10,12 +10,8 @@ participant "Watching Component\nRemote or Local" as watcher
 participant "Blockchain" as blockchain
 
 group Initialize Watcher
+main_component -> watcher: NewWatcher
 activate watcher
-watcher -> watcher: **NewWatcher**
-opt if remote watcher
-watcher -> watcher: **BindToGrpcServer**\nBind to remote interface
-main_component -> watcher: **ConnectToWatcherGrpc**
-end
 end
 
 group Open phase
