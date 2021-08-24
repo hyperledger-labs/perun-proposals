@@ -251,6 +251,11 @@ discard the older ones.
 1. For ledger channel: the latest off-chain states of the ledger channel and,
    of its sub-channels, virtual channels must be registered.
 
+   In some scenarios (for common intermediary of a virtual channel), the latest
+   off-chain state of the virtual channel might not be known. In this case,
+   whatever state known to it can be registered. Other participants will refute
+   with the latest state.
+
 2. In case sub-channel; the latest off-chain state of the parent ledger
    channel, of the sub-channel and, of all the other sub-channels, virtual
    channels funded by the parent ledger channel must be registered.
