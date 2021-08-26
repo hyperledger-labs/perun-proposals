@@ -319,6 +319,12 @@ Architecture (Requires a modification of the architecture)
 
 ### Illustrative usage of watcher
 
+One possible way of integrating the watcher API into go-perun is suggested.
+The suggestion tries to make minimal changes to how the watcher is currently
+being used.
+
+#### Setup
+
 Similar to the other components, an instance of watcher must be initialized and
 passed to the `client.New` API.
 
@@ -343,57 +349,55 @@ client, err := pclient.New(
     watcher)
 ```
 
-### Integrating the watcher into go-perun
+### Integrating into go-perun
 
-A possible way of integrating the watcher API into go-perun is suggested in
-this section.
-
-
-1. After a channel is funded, request the watcher to start watching and publish
-   the initial state. This should be done in three places: when
-   [proposing](https://github.com/hyperledger-labs/go-perun/blob/1fc30ba43eaae379ed5c566bdcf79edafc598b88/client/proposal.go#L173), when
-   [accepting](https://github.com/hyperledger-labs/go-perun/blob/1fc30ba43eaae379ed5c566bdcf79edafc598b88/client/proposal.go#L243) and when [restoring](https://github.com/hyperledger-labs/go-perun/blob/1fc30ba43eaae379ed5c566bdcf79edafc598b88/client/restore.go#L65).
-
+1. After a channel is opened, user calls the `Watch` function on the channel.
+   The existing implementation of the `Watch` function can be replaced with one
+   shown below.
 
     ```go
-    statesPub, adjudicatorEventsSub, err := w.StartWatching(ch1.ID())
-    statesPub.Publish(ch.StateWithSignatures())
+    func (ch *Channel) Watch(h AdjudicatorEventHandler) {
+       watcher := ch.client.watcher
+
+       statesPub, eventsSub, err := watcher.StartWatching(ch.ID())
+       // Handle err.
+
+       // Register "StopWatching" to be called when the channel is closed.
+       c.OnCloseAlways(func() { watcher.StopWatching(ch.ID()) }
+
+       // Set the "statePub" handler for the channel.
+       // On  each off-chain update, the updated state along with signatures
+       // will be published on this handler.
+       err = ch.setStatePub(statePub)
+       // Handle err.
+
+       for {
+          e, err := eventSub.Next()
+          if err != nil {
+             return err
+          }
+          h(e) // Handle event.
+       }
+    }
     ```
 
-2. Consuming events from `adjudicatorEventsSub`:
+2. Add a method `setStatesPub` and a field `statesPub` on `client.Channel`
+   type.
 
-      a. For `RegisteredEvent`, go-perun can update the phase of the channel,
-         so that no updates are sent/accepted while a dispute is in progress.
+    ``` go
+    type Channel struct {
+    ...
+    statesPub watcher.StatesPub
+    ...
+    }
 
-      b. For `ProgressedEvent`, the go-perun can update the phase of the
-         channel, so that no off-chain updates are sent/accepted during
-         force-execution phase.
+    func (ch *Channel) setStatesPub (p watcher.StatesPub) {
+    ch.statesPub = p
+    }
+    ```
 
-In both the cases, the event can be passed to the user (node). They may want to
-call `ForceUpdate` or `Settle`.
-
-
-3. On each state update, publish the state along with the signatures.  This
-   should be done in two places: when
+3. On each state update, publish the state along with the signatures by calling
+   the `ch.statesPub.Publish` API. This should be done in two places: when
    [proposing](https://github.com/hyperledger-labs/go-perun/blob/1fc30ba43eaae379ed5c566bdcf79edafc598b88/client/update.go#L217)
    and when
    [accepting](https://github.com/hyperledger-labs/go-perun/blob/1fc30ba43eaae379ed5c566bdcf79edafc598b88/client/update.go#L370).
-
-    ```go
-    statesPub.Publish(ch.StateWithSignatures())
-    ```
-
-4. Before settling the channel, request the watcher to stop watching for events
-   on this channel. This should be done [after settling a channel](https://github.com/hyperledger-labs/go-perun/blob/1fc30ba43eaae379ed5c566bdcf79edafc598b88/client/adjudicate.go#L184).
-
-    ```go
-    err := w.StopWatching(ch1.ID())
-    ```
-
-5. Before closing the client, shutdown the watcher to ensure any ongoing
-   dispute or force execution processes are completed. This should be done
-   when [closing the client](https://github.com/hyperledger-labs/go-perun/blob/1fc30ba43eaae379ed5c566bdcf79edafc598b88/client/client.go#L113).
-
-    ```go
-    err := w.Shutdown()
-    ```
