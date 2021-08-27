@@ -317,7 +317,7 @@ Architecture (Requires a modification of the architecture)
        interface.
     3. The pub-sub can be implemented using protocols such as `gRPC` or `MQTT`.
 
-### Illustrative usage of watcher
+### Integration with go-perun
 
 One possible way of integrating the watcher API into go-perun is suggested.
 The suggestion tries to make minimal changes to how the watcher is currently
@@ -349,7 +349,7 @@ client, err := pclient.New(
     watcher)
 ```
 
-### Integrating into go-perun
+#### Usage
 
 1. After a channel is opened, user calls the `Watch` function on the channel.
    The existing implementation of the `Watch` function can be replaced with one
