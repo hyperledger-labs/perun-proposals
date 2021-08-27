@@ -1,0 +1,67 @@
+.. SPDX-FileCopyrightText: 2021 Hyperledger
+   SPDX-License-Identifier: CC-BY-4.0
+
+@startuml watcher
+!pragma teoz true
+hide footbox
+
+participant "Main component" as main_component
+participant "Watching Component\nRemote or Local" as watcher
+participant "Blockchain" as blockchain
+
+group Initialize Watcher
+main_component -> watcher: NewWatcher
+activate watcher
+end
+
+group Open phase
+activate main_component
+main_component -> main_component: Open Channel
+main_component -> watcher: **StartWatching**
+watcher -> blockchain: **RegistererSubscriber.Subscribe**\n(Subscribe to adjudicator events\nfor this channel ID)
+activate blockchain
+end
+
+group Transact phase
+main_component -> main_component: Make off-chain\ntransactions
+opt Periodically
+main_component -> watcher: **StatesPub.Publish**\n(newer off-chain state)
+watcher -> watcher: **StatesSub.Next()**\n(Receive the newer state,\nstore it & discard the older one)
+end
+end
+
+group Register phase
+loop until the stop watching command it received
+blockchain -> blockchain: State registered by\nany participant
+watcher <- blockchain:**AdjudicatorEventsSub.Publish**\n(Registered event)
+watcher -> watcher:**AdjudicatorEventsSub.Next()**\n(Receive the Registered event\nand relay it to main component\nbefore processing)
+note over watcher #LightGray
+If it is not the latest state, still notify before refuting. So that, the main
+component can act appropriately while the refutation is in progress.
+end note
+main_component <- watcher: **AdjudicatorEventsPub.Publish**\n(Registered or Progressed event)
+main_component -> main_component: **AdjudicatorEventsSub.Next()**
+opt if registered state is not latest
+watcher -> blockchain: **RegistererSubscriber.Register**\n(Refute with latest off-chain state)
+note over watcher #LightGray
+Once refutation succeeds, watcher will receive
+another Registered event on AdjudicatorEventsSub
+end note
+end
+opt if main component has not sent\nthe latest state to the watcher
+main_component -> watcher: **StatesPub.Publish**\n(latest off-chain state)
+watcher -> watcher: **StatesSub.Next()**\n(Receive the latest state,\nstore it & discard the older one)
+end
+end
+end
+
+
+group Settle phase 
+main_component -> watcher: **Stopwatching**
+watcher -> blockchain: **AdjudicatorEventsSub.Close()**(\nUnsubscribe from adjudicator\nevents for this channel)
+deactivate blockchain
+deactivate watcher
+main_component -> main_component: Settle channel
+end
+
+@enduml
