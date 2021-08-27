@@ -3,7 +3,7 @@
 # Proposal: Watching service for IoT adoption
 
 * Author(s): Manoranjith
-* Status: propose
+* Status: accept
 * Related issue: [perun-proposals#008](https://github.com/hyperledger-labs/perun-proposals/pull/008)
 
 
